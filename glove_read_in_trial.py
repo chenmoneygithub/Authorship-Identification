@@ -2,6 +2,7 @@
 import numpy as np
 import utils.glove as glove
 
+# token_list is the list containing all the tokens
 # tokens is a dictionary that maps a token to its index
 token_list=["this","is","a","dummy","file"]
 
