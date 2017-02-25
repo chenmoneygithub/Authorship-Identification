@@ -150,7 +150,8 @@ class SequencePredictor(Model):
 
         grad_all = optimizer.compute_gradients(loss)
         if self.config.clip_gradients is False:
-            self.grad_norm = tf.global_norm(grad_all)
+            grad_list = [ g[0] for g in grad_all]
+            self.grad_norm = tf.global_norm(grad_list)
             train_op = optimizer.apply_gradients(grad_all)
         else:
             grad_list = [ g[0] for g in grad_all]
