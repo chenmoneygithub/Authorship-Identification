@@ -49,7 +49,9 @@
 \begin{document}
 
 \title{CS 224N: Homework 3}
-\author{Chen Qian}
+\author{Chen Qian (cqian23@stanford.edu)\\
+Tianchang He (th7@stanford.edu)\\
+Rao Zhang (zhangrao@stanford.edu)}
 \date{}
 \maketitle
 % ----------------------------------------------------------------
@@ -160,7 +162,7 @@ Hence, the total computational complexity is $O ( T  (D * H + H *C + H * H) )$.
 
 (b) 
 
-i. For example, if we have two words x and y, separately of Person label and null label. Initially, the probability of classifying $x$ as Person is $0.3$, which is the maximal among all categories, and the probability of classifying $y$ as null is also $0.3$, which is also the maximal. In this case, the F1 score is $\frac{2}{1 + 1} = 1$. Then, by some way, we keep the probability of classifying $x$ as Person being $0.3$, but no longer the maximal among all categories, and increase the the probability of classifying $y$ as null to $0.5$. In the new case, cross-entropy loss decreases, but the F1 score drops to $\frac{2}{\frac{1}{0} + \frac{1}{0}}$. 
+i. For example, if we have two words x and y, separately of Person label and null label. Initially, the probability of classifying $x$ as Person is $0.3$, which is the maximal among all categories, and the probability of classifying $y$ as null is also $0.3$, which is also the maximal. In this case, the F1 score is $\frac{2}{1 + 1} = 1$. Then, by some way, we keep the probability of classifying $x$ as Person being $0.3$, but no longer the maximal among all categories, and increase the the probability of classifying $y$ as null to $0.5$. In the new case, cross-entropy loss decreases from $-2\log0.3$ to $-\log0.5$, but the F1 score across classes drops to 0.5. This can happen on a minibatch and we cannot optimize the weights based on F1 score (which is a macroscopic and discrete evaluation).
 
 \vspace{10pt}
 
@@ -280,11 +282,12 @@ $b_r = 1, w_z = 1, u_z = -1, u_h = 1, w_h = -2$.
    \caption{}
    \label{fig: clip_gru}
  \end{figure}
- 
- i. There is gradients exploding if we do not apply clipping, and clipping helps solve the problem.
+\newpage
+(e)\\
+ i. There is exploding gradient problem in GRU if we do not apply clipping, and clipping helps solve the problem. Also, there is vanishing gradient problem in rnn and clipping won't do much.
  
  \vspace{10pt}
  
- ii. GRU works better than RNN. Because GRU keeps around memories to capture long distance dependencies.
+ ii. Comparing the loss of GRU and RNN we can conclude that GRU works better than RNN. Because GRU keeps around memories to capture long distance dependencies. 
  
 \end{document}
