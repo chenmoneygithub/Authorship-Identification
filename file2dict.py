@@ -40,7 +40,7 @@ def read_myfile(path):
             words_list = []
             words = sentence.strip().split(" ")     # split sentence to words
             for word in words:
-                word = word.strip(" ,\"\'")         # strip a word
+                word = word.strip(" ,)(][{}#$%\"\'")         # strip a word
                 words_list.append(word)
             if len(words_list) >= 1:                # at least 1 word
                 f_list.append(words_list)
@@ -88,6 +88,103 @@ def extract_num(path):
         idx += 1
     return portfolio
 
+"""
+input: author-newss dict
+output: author-news list
+"""
+def dict2auth_news_name(output_name):
+    auth_news_name = []
+    for auth in output_name:
+        newss = output_name[auth]
+        for news in newss:
+            temp_list = []
+            temp_list.append(auth)
+            temp_list.append(news)
+            auth_news_name.append(temp_list)
+    return auth_news_name
+
+"""
+input: author-newss dict
+output: author-news list
+"""
+def dict2auth_news_num(output_num):
+    auth_news_num = []
+    for auth in output_num:
+        newss = output_num[auth]
+        for news in newss:
+            temp_list = []
+            temp_list.append(auth)
+            temp_list.append(news)
+            auth_news_num.append(temp_list)
+    return auth_news_num
+
+"""
+intput: author-newss dict
+output: author-sent list
+"""
+def dict2auth_sent_name(output_name):
+    auth_sent_name = []
+    for auth in output_name:
+        newss = output_name[auth]
+        for news in newss:
+            for sent in news:
+                temp_list = []
+                temp_list.append(auth)
+                temp_list.append(sent)
+                auth_sent_name.append(temp_list)
+    return auth_sent_name
+
+"""
+input: author-newss dict
+output: author-sent list
+"""
+def dict2auth_sent_num(output_num):
+    auth_sent_num = []
+    for auth in output_num:
+        newss = output_num[auth]
+        for news in newss:
+            for sent in news:
+                temp_list = []
+                temp_list.append(auth)
+                temp_list.append(sent)
+                auth_sent_num.append(temp_list)
+    return auth_sent_num
+
+"""
+input: dir path
+output: author-news list
+"""
+def file2auth_news_name(path):
+    output_name = extract_name(path)
+    auth_news_name = dict2auth_news_name(output_name)
+    return auth_news_name
+
+"""
+input: dir path
+output: author-sent list
+"""
+def file2auth_sent_name(path):
+    output_name = extract_name(path)
+    auth_sent_name = dict2auth_sent_name(output_name)
+    return auth_sent_name
+
+"""
+input: dir path
+output: author-news list
+"""
+def file2auth_news_num(path):
+    output_num = extract_num(path)
+    auth_news_num = dict2auth_news_num(output_num)
+    return auth_news_num
+
+"""
+input: dir path
+output: author-sent list
+"""
+def file2auth_sent_num(path):
+    output_num = extract_num(path)
+    auth_sent_num = dict2auth_sent_num(output_num)
+    return auth_sent_num
 
 
 """
@@ -95,18 +192,30 @@ following is used for test
 """
 if __name__=='__main__':
     from timeit import Timer
-    t1=Timer("extract_name(\"./C50/C50train\")","from __main__ import extract_name")
-    t2=Timer("extract_num(\"./C50/C50train\")","from __main__ import extract_num")
+    t1=Timer("extract_name(\"./dataset/C50/C50train\")","from __main__ import extract_name")
+    t2=Timer("extract_num(\"./dataset/C50/C50train\")","from __main__ import extract_num")
     print t1.timeit(1)
     print t2.timeit(1)
 
     cwd = os.getcwd()
-    test_path = cwd + '/C50/C50train'
-    output_name = extract_name(test_path)
-    for x in output_name.items():
+    test_path = cwd + '/dataset/C50/C50train'
+
+    auth_news_name = file2auth_news_name(test_path)
+    for x in auth_news_name:
         print x
         break
-    output_num = extract_num(test_path)
-    for x in output_num.items():
+
+    auth_sent_name = file2auth_sent_name(test_path)
+    for x in auth_sent_name:
+        print x
+        break
+
+    auth_news_num = file2auth_news_num(test_path)
+    for x in auth_news_num:
+        print x
+        break
+
+    auth_sent_num = file2auth_sent_num(test_path)
+    for x in auth_sent_num:
         print x
         break
