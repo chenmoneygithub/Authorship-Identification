@@ -95,13 +95,13 @@ following is used for test
 """
 if __name__=='__main__':
     from timeit import Timer
-    t1=Timer("extract_name(\"./C50/C50train\")","from __main__ import extract_name")
-    t2=Timer("extract_num(\"./C50/C50train\")","from __main__ import extract_num")
+    t1=Timer("extract_name(\"./dataset/C50/C50train\")","from __main__ import extract_name")
+    t2=Timer("extract_num(\"./dataset/C50/C50train\")","from __main__ import extract_num")
     print t1.timeit(1)
     print t2.timeit(1)
 
     cwd = os.getcwd()
-    test_path = cwd + '/C50/C50train'
+    test_path = cwd + '/dataset/C50/C50train'
     output_name = extract_name(test_path)
     for x in output_name.items():
         print x

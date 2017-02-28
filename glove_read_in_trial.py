@@ -2,17 +2,32 @@
 import numpy as np
 import utils.glove as glove
 
+"""
+option 1: read in word vectors according to the order of our own token_list.
+
+VS
+
+option 2: read in word vectors according to the order inside the word vector file.
+          i.e. the token_list are the words inside the word vector file
+"""
+
+# the path of the file where the word vectors are stored
+DUMMY_PATH="utils/glove/glove_dummy.txt"
+
+option =2
 # token_list is the list containing all the tokens
 # tokens is a dictionary that maps a token to its index
-token_list=["this","is","a","dummy","file"]
-
+if option==1:
+    token_list=["is","this","a","file","dummy"]
+elif option ==2:
+    token_list=glove.loadWordTokens(DUMMY_PATH)
+else:
+    assert false, 'Not a valid option'
 # create an empty dictionary
 tokens={}
 for i in range(len(token_list)):
     tokens[token_list[i]]=i
 
-# the path of the file where the word vectors are stored
-DUMMY_PATH="utils/glove/glove_dummy.txt"
 
 # read in word vectors
 # the function takes 3 arguments:
