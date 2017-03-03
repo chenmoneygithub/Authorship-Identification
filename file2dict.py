@@ -186,6 +186,18 @@ def file2auth_sent_num(path):
     auth_sent_num = dict2auth_sent_num(output_num)
     return auth_sent_num
 
+"""
+input: dir path
+output: author-index dict
+"""
+def name2idx(path):
+    dict = {}
+    idx = 0
+    author_newss_dict = read_mydir(path)            # obtain {author:[file_list]} dict
+    for author in author_newss_dict:
+        dict[author] = idx
+        idx += 1
+    return dict
 
 """
 following is used for test
@@ -199,8 +211,9 @@ if __name__=='__main__':
 
     cwd = os.getcwd()
     test_path = cwd + '/dataset/C50/C50train'
-    output_name = extract_name(test_path)
-    for x in output_name.items():
+
+    auth_news_name = file2auth_news_name(test_path)
+    for x in auth_news_name:
         print x
         break
 
@@ -214,4 +227,12 @@ if __name__=='__main__':
         print x
         break
 
+    auth_sent_num = file2auth_sent_num(test_path)
+    for x in auth_sent_num:
+        print x
+        break
 
+    name_idx = name2idx(test_path)
+    for x in name_idx.items():
+        print x
+        break

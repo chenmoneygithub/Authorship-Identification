@@ -1,3 +1,4 @@
 # Authorship-Identification
 
-# Just have a try
+# Roadmap
+RNN -> GRU/LSTM -> CNN -> SVM -> change dataset -> similarity comparison
