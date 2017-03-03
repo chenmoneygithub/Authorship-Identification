@@ -20,3 +20,15 @@ def loadWordVectors(tokens, filepath=DEFAULT_FILE_PATH, dimensions=50):
                 raise RuntimeError("wrong number of dimensions")
             wordVectors[tokens[token]] = np.asarray(data)
     return wordVectors
+
+def loadWordTokens(filepath=DEFAULT_FILE_PATH):
+    token_list=[]
+    with open(filepath) as ifs:
+        for line in ifs:
+            line = line.strip()
+            if not line:
+                continue
+            row = line.split()
+            token = row[0]
+            token_list.append(token)
+    return token_list

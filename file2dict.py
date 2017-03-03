@@ -199,9 +199,8 @@ if __name__=='__main__':
 
     cwd = os.getcwd()
     test_path = cwd + '/dataset/C50/C50train'
-
-    auth_news_name = file2auth_news_name(test_path)
-    for x in auth_news_name:
+    output_name = extract_name(test_path)
+    for x in output_name.items():
         print x
         break
 
@@ -215,7 +214,4 @@ if __name__=='__main__':
         print x
         break
 
-    auth_sent_num = file2auth_sent_num(test_path)
-    for x in auth_sent_num:
-        print x
-        break
+
