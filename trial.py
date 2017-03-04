@@ -4,23 +4,25 @@ import utils.glove as glove
 import numpy as np
 #from proj_rnn_cell import RNNCell
 
-DUMMY_PATH="utils/glove/glove_dummy.txt"
-token_list=glove.loadWordTokens(DUMMY_PATH)
-tokens={}
-for i in range(len(token_list)):
-    tokens[token_list[i]]=i
-wordVectors=glove.loadWordVectors(tokens,DUMMY_PATH,6)
+
 #print wordVectors
 # let's say the sentence is "this is a file", labeled 1
 # "this is dummy", labeled 2
+<<<<<<< HEAD
 sentences=np.array([[0,1,2,4],[0,1,3,0] ])
 
+=======
+sentences=np.array([[0,1,2,4],[0,1,3,5] ])
+>>>>>>> origin/master
 mask=np.array([[0 ,0, 0, 1],[0,0,1,0]])
 
 labels=np.array([[1,0,0],[0,1,0]])
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> origin/master
 n_classes=3
 embed_size=6
 max_length=4
@@ -28,6 +30,19 @@ batch_size=1
 lr=0.001
 n_features=6
 hidden_size=10
+DUMMY_PATH="utils/glove/glove_dummy.txt"
+
+token_list=glove.loadWordTokens(DUMMY_PATH)
+tokens={}
+for i in range(len(token_list)):
+    tokens[token_list[i]]=i
+wordVectors=glove.loadWordVectors(tokens,DUMMY_PATH,embed_size)
+token_list.append("cqian23th7zhangrao")
+tokens["cqian23th7zhangrao"]=len(token_list)-1
+print 'WV',np.shape(wordVectors)
+wordVectors=np.append(wordVectors,[np.zeros(embed_size)],axis=0)
+print 'WV',np.shape(wordVectors)
+
 
 
 # start buiding model
@@ -65,6 +80,10 @@ for i in range(max_length):
 preds=tf.pack(preds)
 preds2=tf.reshape(preds,[-1,max_length,n_classes])
 
+# these are for verification
+preds3=tf.nn.softmax(preds2)
+preds4=tf.log(preds3)
+
 # loss calculation
 labels_to_loss=tf.tile(labels_placeholder,[max_length,1])
 loss = tf.nn.softmax_cross_entropy_with_logits(preds2,labels_to_loss)
@@ -85,6 +104,11 @@ pp=sess.run(preds,feed_dict=feed_dict)
 print 'preds after pack',pp
 pp2=sess.run(preds2,feed_dict=feed_dict)
 print 'preds after reshape',pp2
+pp3=sess.run(preds3,feed_dict=feed_dict)
+print 'preds after softmax',pp3
+pp4=sess.run(preds4,feed_dict=feed_dict)
+print 'preds after log',pp4
+
 lalo=sess.run(labels_to_loss,feed_dict=feed_dict)
 print 'labels to loss',lalo
 ll=sess.run(loss,feed_dict=feed_dict)
