@@ -171,7 +171,7 @@ class RNNModel(AttributionModel):
 
         # Define U and b2 as variables.
         # Initialize state as vector of zeros.
-        ### YOUR CODE HERE (~4-6 lines)
+
         self.U = tf.get_variable('U',
                               [Config.hidden_size, Config.n_classes],
                               initializer = tf.contrib.layers.xavier_initializer())
@@ -179,7 +179,6 @@ class RNNModel(AttributionModel):
                               [Config.n_classes, ],
                               initializer = tf.contrib.layers.xavier_initializer())
         h = tf.zeros([tf.shape(x)[0], Config.hidden_size])
-        ### END YOUR CODE
 
         with tf.variable_scope("RNN"):
             for time_step in range(self.max_length):
@@ -207,7 +206,6 @@ class RNNModel(AttributionModel):
             loss: A 0-d tensor (scalar)
         """
         loss = tf.nn.sparse_softmax_cross_entropy_with_logits(preds, self.labels_placeholder)
-        loss = tf.boolean_mask(loss, self.mask_placeholder)
         loss = tf.reduce_mean(loss)
 
         return loss
@@ -231,9 +229,9 @@ class RNNModel(AttributionModel):
         Returns:
             train_op: The Op for training.
         """
-        ### YOUR CODE HERE (~1-2 lines)
+
         train_op = tf.train.AdamOptimizer(self.config.lr).minimize(loss)
-        ### END YOUR CODE
+
         return train_op
 
     def preprocess_sequence_data(self, examples):
