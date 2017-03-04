@@ -49,6 +49,7 @@ W_h = tf.Variable(np.random.rand(hidden_size, hidden_size).astype(np.float32),tf
 W_x = tf.Variable(np.random.rand(n_features, hidden_size).astype(np.float32),tf.float32)
 b1 = tf.Variable(np.random.rand(hidden_size).astype(np.float32),tf.float32)
 
+# run through rnn
 for i in range(max_length):
     if i >= 1:
         tf.get_variable_scope().reuse_variables()
@@ -57,20 +58,20 @@ for i in range(max_length):
     print 'p',tf.shape(p)
     preds.append(p)
 
+# prediction
 preds=tf.pack(preds)
 preds2=tf.reshape(preds,[-1,max_length,n_classes])
-print tf.shape(preds2)
+
+# loss calculation
 labels_to_loss=tf.tile(labels_placeholder,[max_length,1])
 loss = tf.nn.softmax_cross_entropy_with_logits(preds2,labels_to_loss)
 loss2=tf.boolean_mask(loss,mask_placeholder)
 loss3=tf.reduce_mean(loss2)
+
+# training op
 train_op=tf.train.AdamOptimizer(lr).minimize(loss)
-print tf.shape(loss3)
-print tf.shape(mask_placeholder)
-#loss = tf.reduce_mean(loss*mask_placeholder)
 
-
-#x=tf.reshape(x,[-1,max_length,embed_size])
+# test implementation
 init = tf.global_variables_initializer()
 sess=tf.Session()
 sess.run(init)
@@ -78,9 +79,9 @@ xx=sess.run(x,feed_dict=feed_dict)
 print 'embedding',xx
 print 'embedding shape',np.shape(xx)
 pp=sess.run(preds,feed_dict=feed_dict)
-print 'after pack',pp
+print 'preds after pack',pp
 pp2=sess.run(preds2,feed_dict=feed_dict)
-print 'after reshape',pp2
+print 'preds after reshape',pp2
 lalo=sess.run(labels_to_loss,feed_dict=feed_dict)
 print 'labels to loss',lalo
 ll=sess.run(loss,feed_dict=feed_dict)
