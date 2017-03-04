@@ -1,5 +1,6 @@
 
 import numpy as np
+import json
 
 def read_minibatch(data, batch_size, max_length, shuffle = True):
     """
@@ -36,6 +37,14 @@ def read_minibatch(data, batch_size, max_length, shuffle = True):
 
 def process_to_minibatch(data, max_length):
 
+
+    with open('../../data/glove/tokenToIndex', 'r') as f:
+        try:
+            wordToIndex = json.load(f)
+        # if the file is empty the ValueError will be thrown
+        except ValueError:
+            wordToIndex = {}
+
     batch = []
 
     feat_list = []
@@ -47,11 +56,11 @@ def process_to_minibatch(data, max_length):
         for j in range(max_length):
             if(j >= len(data[i][1])):
                 minimask_list.append(False)
-                minifeat_list.append(match_word_to_vector("cqian23th7zhangrao"))
+                minifeat_list.append(match_word_to_vector("cqian23th7zhangrao", wordToIndex))
                 #minifeat_list.append([0])
             else:
                 minimask_list.append(True)
-                minifeat_list.append(match_word_to_vector(data[j][1][i]))
+                minifeat_list.append(match_word_to_vector(data[j][1][i], wordToIndex))
                 #minifeat_list.append([data[i][1][j]])
 
         feat_list.append(minifeat_list)
@@ -65,7 +74,7 @@ def process_to_minibatch(data, max_length):
     return batch
 
 
-def match_word_to_vector(word, word_dict, glove_mat):
+def match_word_to_vector(word, word_dict):
     # this function is to map a word to its Glove vector
     if(word_dict.has_key(word) is True):
         ind = word_dict[word]
