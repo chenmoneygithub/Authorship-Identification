@@ -8,21 +8,13 @@ import numpy as np
 #print wordVectors
 # let's say the sentence is "this is a file", labeled 1
 # "this is dummy", labeled 2
-<<<<<<< HEAD
+
 sentences=np.array([[0,1,2,4],[0,1,3,0] ])
-
-=======
 sentences=np.array([[0,1,2,4],[0,1,3,5] ])
->>>>>>> origin/master
 mask=np.array([[0 ,0, 0, 1],[0,0,1,0]])
-
 labels=np.array([[1,0,0],[0,1,0]])
 
-<<<<<<< HEAD
 
-
-=======
->>>>>>> origin/master
 n_classes=3
 embed_size=6
 max_length=4
