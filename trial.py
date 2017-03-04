@@ -14,8 +14,11 @@ wordVectors=glove.loadWordVectors(tokens,DUMMY_PATH,6)
 # let's say the sentence is "this is a file", labeled 1
 # "this is dummy", labeled 2
 sentences=np.array([[0,1,2,4],[0,1,3,0] ])
+
 mask=np.array([[0 ,0, 0, 1],[0,0,1,0]])
+
 labels=np.array([[1,0,0],[0,1,0]])
+
 
 
 n_classes=3
