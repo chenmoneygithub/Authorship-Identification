@@ -69,6 +69,10 @@ for i in range(max_length):
 preds=tf.pack(preds)
 preds2=tf.reshape(preds,[-1,max_length,n_classes])
 
+# these are for verification
+preds3=tf.nn.softmax(preds2)
+preds4=tf.log(preds3)
+
 # loss calculation
 labels_to_loss=tf.tile(labels_placeholder,[max_length,1])
 loss = tf.nn.softmax_cross_entropy_with_logits(preds2,labels_to_loss)
@@ -89,6 +93,11 @@ pp=sess.run(preds,feed_dict=feed_dict)
 print 'preds after pack',pp
 pp2=sess.run(preds2,feed_dict=feed_dict)
 print 'preds after reshape',pp2
+pp3=sess.run(preds3,feed_dict=feed_dict)
+print 'preds after softmax',pp3
+pp4=sess.run(preds4,feed_dict=feed_dict)
+print 'preds after log',pp4
+
 lalo=sess.run(labels_to_loss,feed_dict=feed_dict)
 print 'labels to loss',lalo
 ll=sess.run(loss,feed_dict=feed_dict)
