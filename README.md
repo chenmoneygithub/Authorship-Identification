@@ -1,8 +1,9 @@
 # Authorship-Identification
 
-# Roadmap
+## Roadmap
 RNN -> GRU/LSTM -> CNN -> SVM -> change dataset -> similarity comparison
 
-# Glove Directory
+## Glove Directory
 xxx/Authorship-Identification
+
 xxx/data/glove/*.txt
