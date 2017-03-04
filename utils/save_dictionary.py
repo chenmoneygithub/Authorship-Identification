@@ -24,9 +24,3 @@ with open('../../data/glove/tokenToIndex', 'r') as f:
     # if the file is empty the ValueError will be thrown
     except ValueError:
         data = {}
-
-
-
-
-
-

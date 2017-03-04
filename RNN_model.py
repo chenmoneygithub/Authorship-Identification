@@ -37,9 +37,8 @@ class Config:
     information parameters. Model objects are passed a Config() object at
     instantiation.
     """
-    vector_length = 20 # the length of word vector
+
     window_size = 0
-    n_features = (2 * window_size + 1) * vector_length # Number of features for every word in the input
 
     max_length = 35 # longest length of a sentence we will process
     n_classes = 51 # in total, we have 50 classes
@@ -91,9 +90,9 @@ class RNNModel(AttributionModel):
         dropout_placeholder: Dropout value placeholder (scalar), type tf.float32
 
         """
-        self.input_placeholder = tf.placeholder(tf.int32, [None, self.max_length, self.config.n_features])
-        self.labels_placeholder = tf.placeholder(tf.int32, [None, ])
-        self.mask_placeholder = tf.placeholder(tf.bool, [None, self.max_length, self.config.n_features])
+        self.input_placeholder = tf.placeholder(tf.int32, [None, self.max_length])
+        self.labels_placeholder = tf.placeholder(tf.int32, [None, self.n_classes])
+        self.mask_placeholder = tf.placeholder(tf.bool, [None, self.max_length])
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
     def create_feed_dict(self, inputs_batch, mask_batch, labels_batch=None, dropout=1):
@@ -138,7 +137,6 @@ class RNNModel(AttributionModel):
 
         embeddingTensor = tf.Variable(self.pretrained_embeddings)
         embeddings = tf.nn.embedding_lookup(embeddingTensor, self.input_placeholder)
-        embeddings = tf.reshape(embeddings, [-1, self.max_length, Config.n_features * Config.embed_size])
 
         return embeddings
 
@@ -167,7 +165,7 @@ class RNNModel(AttributionModel):
         # Use the cell defined below. For Q2, we will just be using the
         # RNNCell you defined, but for Q3, we will run this code again
         # with a GRU cell!
-        cell = RNNCell(self.config.n_features, self.config.hidden_size)
+        cell = RNNCell(Config.n_features, Config.hidden_size)
 
         # Define U and b2 as variables.
         # Initialize state as vector of zeros.
@@ -181,19 +179,22 @@ class RNNModel(AttributionModel):
         h = tf.zeros([tf.shape(x)[0], Config.hidden_size])
 
         with tf.variable_scope("RNN"):
+
             for time_step in range(self.max_length):
                 if time_step >= 1:
                     tf.get_variable_scope().reuse_variables()
                 o, h = cell(x[:,time_step,:], h)
-                if(time_step == self.max_length - 1):
-                    o_drop = tf.nn.dropout(o, dropout_rate)
-                    preds = tf.matmul(o_drop, self.U) + self.b2
+
+                o_drop = tf.nn.dropout(o, dropout_rate)
+                preds.append(tf.matmul(o_drop, self.U) + self.b2)
 
         # Make sure to reshape @preds here.
         #????? Do we need reshape?
         # preds = tf.pack(preds)
         # preds = tf.transpose(preds, perm = [1, 0, 2])
         # preds = tf.reshape(preds, [-1, Config.max_length, Config.n_classes])
+        preds=tf.pack(preds)
+        preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
         return preds
 
     def add_loss_op(self, preds):
@@ -205,7 +206,9 @@ class RNNModel(AttributionModel):
         Returns:
             loss: A 0-d tensor (scalar)
         """
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(preds, self.labels_placeholder)
+        labels_to_loss=tf.tile(labels_placeholder,[Config.max_length,1])
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(preds, labels_to_loss)
+        loss = tf.boolean_mask(loss,mask_placeholder)
         loss = tf.reduce_mean(loss)
 
         return loss
@@ -230,7 +233,7 @@ class RNNModel(AttributionModel):
             train_op: The Op for training.
         """
 
-        train_op = tf.train.AdamOptimizer(self.config.lr).minimize(loss)
+        train_op = tf.train.AdamOptimizer(Config.lr).minimize(loss)
 
         return train_op
 
