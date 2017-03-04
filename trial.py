@@ -4,19 +4,13 @@ import utils.glove as glove
 import numpy as np
 #from proj_rnn_cell import RNNCell
 
-DUMMY_PATH="utils/glove/glove_dummy.txt"
-token_list=glove.loadWordTokens(DUMMY_PATH)
-tokens={}
-for i in range(len(token_list)):
-    tokens[token_list[i]]=i
-wordVectors=glove.loadWordVectors(tokens,DUMMY_PATH,6)
+
 #print wordVectors
 # let's say the sentence is "this is a file", labeled 1
 # "this is dummy", labeled 2
-sentences=np.array([[0,1,2,4],[0,1,3,0] ])
+sentences=np.array([[0,1,2,4],[0,1,3,5] ])
 mask=np.array([[0 ,0, 0, 1],[0,0,1,0]])
 labels=np.array([[1,0,0],[0,1,0]])
-
 
 n_classes=3
 embed_size=6
@@ -25,6 +19,19 @@ batch_size=1
 lr=0.001
 n_features=6
 hidden_size=10
+DUMMY_PATH="utils/glove/glove_dummy.txt"
+
+token_list=glove.loadWordTokens(DUMMY_PATH)
+tokens={}
+for i in range(len(token_list)):
+    tokens[token_list[i]]=i
+wordVectors=glove.loadWordVectors(tokens,DUMMY_PATH,embed_size)
+token_list.append("cqian23th7zhangrao")
+tokens["cqian23th7zhangrao"]=len(token_list)-1
+print 'WV',np.shape(wordVectors)
+wordVectors=np.append(wordVectors,[np.zeros(embed_size)],axis=0)
+print 'WV',np.shape(wordVectors)
+
 
 
 # start buiding model
