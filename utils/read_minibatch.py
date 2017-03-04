@@ -47,12 +47,13 @@ def process_to_minibatch(data, max_length):
         for j in range(max_length):
             if(j >= len(data[i][1])):
                 minimask_list.append(False)
-                #minifeat_list.append(match_word_to_vector(" "))
-                minifeat_list.append([0])
+                minifeat_list.append(match_word_to_vector("cqian23th7zhangrao"))
+                #minifeat_list.append([0])
             else:
                 minimask_list.append(True)
-                #minifeat_list.append(match_word_to_vector(data[j][1][i]))
-                minifeat_list.append([data[i][1][j]])
+                minifeat_list.append(match_word_to_vector(data[j][1][i]))
+                #minifeat_list.append([data[i][1][j]])
+
         feat_list.append(minifeat_list)
         mask_list.append(minifeat_list)
         label_list.append(data[i][0])
@@ -68,7 +69,7 @@ def match_word_to_vector(word, word_dict, glove_mat):
     # this function is to map a word to its Glove vector
     if(word_dict.has_key(word) is True):
         ind = word_dict[word]
-        return glove_mat[ind, :] # return the corresponding vector
+        return ind
     else:
         return None
 
