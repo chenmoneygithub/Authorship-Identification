@@ -36,8 +36,6 @@ def read_minibatch(data, batch_size, max_length, shuffle = True):
     return batch_list
 
 def process_to_minibatch(data, max_length):
-
-
     with open('../../data/glove/tokenToIndex', 'r') as f:
         try:
             wordToIndex = json.load(f)
@@ -53,19 +51,22 @@ def process_to_minibatch(data, max_length):
     for i in range(len(data)):
         minifeat_list = []
         minimask_list = []
+        minilabel_list = []
         for j in range(max_length):
-            if(j >= len(data[i][1])):
-                minimask_list.append(False)
+            if(j == len(data[i][1] - 1)):
+                minimask_list.append(True)
                 minifeat_list.append(match_word_to_vector("cqian23th7zhangrao", wordToIndex))
+                minilabel_list.append(data[j][0])
                 #minifeat_list.append([0])
             else:
-                minimask_list.append(True)
+                minimask_list.append(False)
                 minifeat_list.append(match_word_to_vector(data[j][1][i], wordToIndex))
+                minilabel_list.append(data[j][0])
                 #minifeat_list.append([data[i][1][j]])
 
         feat_list.append(minifeat_list)
-        mask_list.append(minifeat_list)
-        label_list.append(data[i][0])
+        mask_list.append(minimask_list)
+        label_list.append(minilabel_list)
 
     batch.append(feat_list)
     batch.append(mask_list)
