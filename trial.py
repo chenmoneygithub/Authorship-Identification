@@ -82,6 +82,7 @@ preds4=tf.log(preds3)
 
 # loss calculation
 labels_to_loss=tf.tile(labels_placeholder,[max_length,1])
+labels_to_loss=tf.reshape(labels_to_loss,[-1,max_length,n_classes])
 loss = tf.nn.softmax_cross_entropy_with_logits(preds2,labels_to_loss)
 loss2=tf.boolean_mask(loss,mask_placeholder)
 loss3=tf.reduce_mean(loss2)
@@ -100,15 +101,23 @@ pp=sess.run(preds,feed_dict=feed_dict)
 print 'preds after pack',pp
 pp2=sess.run(preds2,feed_dict=feed_dict)
 print 'preds after reshape',pp2
+
+
 pp3=sess.run(preds3,feed_dict=feed_dict)
 print 'preds after softmax',pp3
+
+
+mask2=np.stack([mask for i in range(n_classes)] ,2)
+pred6=np.sum(np.multiply(pp3,mask2),1)
+print 'test batch_pred',pred6
+
 pp4=sess.run(preds4,feed_dict=feed_dict)
 print 'preds after log',pp4
 
 lalo=sess.run(labels_to_loss,feed_dict=feed_dict)
-print 'labels to loss',lalo
+print 'labels to loss',lalo.shape, lalo
 ll=sess.run(loss,feed_dict=feed_dict)
-print 'after softmax loss',ll
+print 'after softmax loss',ll.shape,ll
 ll2=sess.run(loss2,feed_dict=feed_dict)
 print 'after boolean_mask loss',ll2
 ll3=sess.run(loss3,feed_dict=feed_dict)

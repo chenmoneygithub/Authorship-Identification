@@ -247,6 +247,21 @@ class RNNModel(AttributionModel):
         _, loss = sess.run([self.train_op, self.loss], feed_dict=feed)
         return loss
 
+    def predict_on_batch(self, sess, inputs_batch, mask_batch):
+        """Make predictions for the provided batch of data
+
+        Args:
+            sess: tf.Session()
+            input_batch: np.ndarray of shape (n_samples, max_length)
+            mask_batch: np.ndarray of shape (n_samples, max_length)
+        Returns:
+            predictions: np.ndarray of shape (n_samples, n_classes)
+        """
+        feed = self.create_feed_dict(inputs_batch,mask_batch)
+        predictions = sess.run(tf.nn.softmax(self.pred), feed_dict=feed)
+        mask2=np.stack([mask_batch for i in range(Config.n_classes)] ,2)
+        pred2=np.sum(np.multiply(predictions,mask2),1)
+        return pred2
 
     def train_model(self):
         cwd = os.getcwd()
