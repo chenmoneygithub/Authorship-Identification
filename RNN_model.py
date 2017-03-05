@@ -258,7 +258,7 @@ class RNNModel(AttributionModel):
         with tf.Session() as session:
             session.run(init)
             for batch in batch_list:
-                batch_label =
+                batch_label = convertOnehotLabel(batch_list[2])
 
 
 
@@ -277,7 +277,7 @@ class RNNModel(AttributionModel):
 def convertOnehotLabel(label_index_list):
     label_array = np.zeros([Config.batch_size, Config.n_classes])
     for i in range(len(label_index_list)):
-        label_array[i][label_index_list[i]] =
-
+        label_array[i][label_index_list[i]] = 1
+    return label_array
 
 if __name__ == "__main__":
