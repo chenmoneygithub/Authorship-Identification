@@ -36,7 +36,7 @@ def read_minibatch(data, batch_size, max_length, shuffle = True):
     return batch_list
 
 def process_to_minibatch(data, max_length):
-    with open('../../data/glove/tokenToIndex', 'r') as f:
+    with open('../data/glove/tokenToIndex', 'r') as f:
         try:
             wordToIndex = json.load(f)
         # if the file is empty the ValueError will be thrown
@@ -85,21 +85,30 @@ def match_word_to_vector(word, word_dict):
         ind = word_dict[word]
         return ind
     else:
-        return [0, 0, 0]
+        return 0
 
-data = [ [1, ['a', 'a', 'a', 'a', 'a', 'a']],
-         [0, [1, 2, 3, 4, 5, 6]],
-         [1, [1, 2, 3, 4, 5, 6]],
-         [3, [1, 2, 3, 4, 5, 6]],
-         [1, [1, 2, 3, 4, 5, 6]],
-         [1, [1, 2, 3, 4, 5, 6]],
-         [7, [1, 2, 3, 4, 5, 6]],
-         [1, [1, 2, 3, 4, 5, 6, 7, 8]],
-         [19, [1, 2, 3, 4]],
-         [1, [1, 2, 3, 4, 5, 6]],
-         [1, [1, 2, 3, 4, 5, 6]],
-         [1, [1, 2, 3, 4, 5, 6]],
-         [1, [1, 2, 3, 4, 5, 6]]]
 
-batch_list = read_minibatch(data, 3, 6)
-print (batch_list)
+def convertOnehotLabel(label_index_list, n_classes):
+    label_array = np.zeros([len(label_index_list), n_classes])
+    for i in range(len(label_index_list)):
+        label_array[i][label_index_list[i]] = 1
+    return label_array
+
+if __name__ == "__main__":
+
+    data = [ [1, ['a', 'a', 'a', 'a', 'a', 'a']],
+             [0, [1, 2, 3, 4, 5, 6]],
+             [1, [1, 2, 3, 4, 5, 6]],
+             [3, [1, 2, 3, 4, 5, 6]],
+             [1, [1, 2, 3, 4, 5, 6]],
+             [1, [1, 2, 3, 4, 5, 6]],
+             [7, [1, 2, 3, 4, 5, 6]],
+             [1, [1, 2, 3, 4, 5, 6, 7, 8]],
+             [19, [1, 2, 3, 4]],
+             [1, [1, 2, 3, 4, 5, 6]],
+             [1, [1, 2, 3, 4, 5, 6]],
+             [1, [1, 2, 3, 4, 5, 6]],
+             [1, [1, 2, 3, 4, 5, 6]]]
+
+    batch_list = read_minibatch(data, 3, 6)
+    print (batch_list)

@@ -15,6 +15,7 @@ import os
 
 import file2dict as fdt
 import utils.read_minibatch as rmb
+from utils.data_util import load_embeddings
 
 from datetime import datetime
 
@@ -60,13 +61,14 @@ class Config:
     lr = 0.001 # learning rate
 
     def __init__(self, args):
-        self.cell = args.cell
+
+        #self.cell = args.cell
 
         if "output_path" in args:
             # Where to save things.
             self.output_path = args.output_path
         else:
-            self.output_path = "results/{}/{:%Y%m%d_%H%M%S}/".format(self.cell, datetime.now())
+            self.output_path = "results/{}/{:%Y%m%d_%H%M%S}/".format("RNN", datetime.now())
 
         self.model_output = self.output_path + "model.weights"
         self.eval_output = self.output_path + "results.txt"
@@ -95,9 +97,9 @@ class RNNModel(AttributionModel):
         dropout_placeholder: Dropout value placeholder (scalar), type tf.float32
 
         """
-        self.input_placeholder = tf.placeholder(tf.int32, [None, self.max_length])
-        self.labels_placeholder = tf.placeholder(tf.int32, [None, self.n_classes])
-        self.mask_placeholder = tf.placeholder(tf.bool, [None, self.max_length])
+        self.input_placeholder = tf.placeholder(tf.int32, [None, Config.max_length])
+        self.labels_placeholder = tf.placeholder(tf.int32, [None, Config.n_classes])
+        self.mask_placeholder = tf.placeholder(tf.bool, [None, Config.max_length])
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
     def create_feed_dict(self, inputs_batch, mask_batch, labels_batch=None, dropout=1):
@@ -170,7 +172,7 @@ class RNNModel(AttributionModel):
         # Use the cell defined below. For Q2, we will just be using the
         # RNNCell you defined, but for Q3, we will run this code again
         # with a GRU cell!
-        cell = RNNCell(Config.n_features, Config.hidden_size)
+        cell = RNNCell(Config.embed_size, Config.hidden_size)
 
         # Define U and b2 as variables.
         # Initialize state as vector of zeros.
@@ -185,7 +187,7 @@ class RNNModel(AttributionModel):
 
         with tf.variable_scope("RNN"):
 
-            for time_step in range(self.max_length):
+            for time_step in range(Config.max_length):
                 if time_step >= 1:
                     tf.get_variable_scope().reuse_variables()
                 o, h = cell(x[:,time_step,:], h)
@@ -208,9 +210,10 @@ class RNNModel(AttributionModel):
         Returns:
             loss: A 0-d tensor (scalar)
         """
-        labels_to_loss=tf.tile(labels_placeholder,[Config.max_length,1])
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(preds, labels_to_loss)
-        loss = tf.boolean_mask(loss,mask_placeholder)
+        labels_to_loss=tf.tile(self.labels_placeholder,[Config.max_length,1])
+        labels_to_loss=tf.reshape(labels_to_loss,[-1,Config.max_length,Config.n_classes])
+        loss = tf.nn.softmax_cross_entropy_with_logits(preds, labels_to_loss)
+        loss = tf.boolean_mask(loss, self.mask_placeholder)
         loss = tf.reduce_mean(loss)
 
         return loss
@@ -252,19 +255,32 @@ class RNNModel(AttributionModel):
         cwd = os.getcwd()
         data_path = cwd + '/dataset/C50/C50train'
         auth_sent_num = fdt.file2auth_sent_num(data_path)  # read in the training data
+        auth_sent_num = auth_sent_num[0 : 100]
         batch_list = rmb.read_minibatch(auth_sent_num, Config.batch_size, Config.max_length)
 
         init = tf.global_variables_initializer()
         with tf.Session() as session:
             session.run(init)
-            for batch in batch_list:
-                batch_label = convertOnehotLabel(batch_list[2])
+            for iterTime in range(Config.n_epochs):
+                loss_list = []
+                smallIter = 0
+                for batch in batch_list:
+                    batch_label = rmb.convertOnehotLabel(batch[2],  Config.n_classes)
+                    batch_feat = np.array(batch[0], dtype = np.float32)
+                    batch_mask = np.array(batch[1], dtype = bool)
+                   # print batch_label.shape, batch_feat.shape
+                    print "train_on_batch!"
+                    loss = self.train_on_batch(session, batch_feat, batch_label, batch_mask)
+                    loss_list.append(loss)
+                    smallIter += 1
+                    #if(smallIter % 200 == 0):
+                    print ("Intermediate epoch %d : loss : %f" %(iterTime, np.mean(np.mean(np.array(loss)))) )
 
+            print ("epoch %d : loss : %f" %(iterTime, np.mean(np.mean(np.array(loss)))) )
 
+    def __init__(self, config, pretrained_embeddings, report=None):
 
-    def __init__(self, helper, config, pretrained_embeddings, report=None):
-
-        super(RNNModel, self).__init__(helper, config, report)
+        super(RNNModel, self).__init__(config)
         self.pretrained_embeddings = pretrained_embeddings
 
         self.input_placeholder = None
@@ -274,10 +290,11 @@ class RNNModel(AttributionModel):
 
         self.build()
 
-def convertOnehotLabel(label_index_list):
-    label_array = np.zeros([Config.batch_size, Config.n_classes])
-    for i in range(len(label_index_list)):
-        label_array[i][label_index_list[i]] = 1
-    return label_array
 
 if __name__ == "__main__":
+    args = "gru"
+    config = Config(args)
+    glove_path = "../data/glove/glove.6B.50d.txt"
+    glove_vector = load_embeddings(glove_path, config.embed_size)
+    model = RNNModel(config, glove_vector.astype(np.float32))
+    model.train_model()
