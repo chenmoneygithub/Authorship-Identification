@@ -135,7 +135,7 @@ class RNNModel(AttributionModel):
             embeddings: tf.Tensor of shape (None, n_features*embed_size)
         """
 
-        embeddingTensor = tf.Variable(self.pretrained_embeddings)
+        embeddingTensor = tf.Variable(self.pretrained_embeddings,tf.float32)
         embeddings = tf.nn.embedding_lookup(embeddingTensor, self.input_placeholder)
 
         return embeddings
@@ -189,10 +189,7 @@ class RNNModel(AttributionModel):
                 preds.append(tf.matmul(o_drop, self.U) + self.b2)
 
         # Make sure to reshape @preds here.
-        #????? Do we need reshape?
-        # preds = tf.pack(preds)
-        # preds = tf.transpose(preds, perm = [1, 0, 2])
-        # preds = tf.reshape(preds, [-1, Config.max_length, Config.n_classes])
+
         preds=tf.pack(preds)
         preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
         return preds
