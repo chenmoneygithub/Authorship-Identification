@@ -19,10 +19,9 @@ class AttributionModel(Model):
     """
     Implements special functionality for authorship-attribution models.
     """
-    def __init__(self, helper, config, report=None):
-        self.helper = helper
+    def __init__(self, config, report=None):
         self.config = config
-        self.report = report
+        #self.report = report
 
     def prepare_data_minibatch(self, raw_data):
         """
