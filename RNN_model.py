@@ -11,6 +11,11 @@ import argparse
 import logging
 import sys
 import time
+import os
+
+import file2dict as fdt
+import utils.read_minibatch as rmb
+
 from datetime import datetime
 
 import tensorflow as tf
@@ -242,6 +247,21 @@ class RNNModel(AttributionModel):
         _, loss = sess.run([self.train_op, self.loss], feed_dict=feed)
         return loss
 
+
+    def train_model(self):
+        cwd = os.getcwd()
+        data_path = cwd + '/dataset/C50/C50train'
+        auth_sent_num = fdt.file2auth_sent_num(data_path)  # read in the training data
+        batch_list = rmb.read_minibatch(auth_sent_num, Config.batch_size, Config.max_length)
+
+        init = tf.global_variables_initializer()
+        with tf.Session() as session:
+            session.run(init)
+            for batch in batch_list:
+                batch_label =
+
+
+
     def __init__(self, helper, config, pretrained_embeddings, report=None):
 
         super(RNNModel, self).__init__(helper, config, report)
@@ -253,5 +273,11 @@ class RNNModel(AttributionModel):
         self.dropout_placeholder = None
 
         self.build()
+
+def convertOnehotLabel(label_index_list):
+    label_array = np.zeros([Config.batch_size, Config.n_classes])
+    for i in range(len(label_index_list)):
+        label_array[i][label_index_list[i]] =
+
 
 if __name__ == "__main__":
