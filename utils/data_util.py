@@ -24,7 +24,7 @@ def load_embeddings(path=DEFAULT_FILE_PATH2,d=DEFAULT_DIMENSION):
     tokens={}
     for i in range(len(token_list)):
         tokens[token_list[i]]=i
-    embeddings=glove.loadWordVectors(tokens,DUMMY_PATH,embed_size)
+    embeddings=glove.loadWordVectors(tokens,path,d)
 
     assert(embeddings.shape[1]==d,"Conflict between file and dimension")
 

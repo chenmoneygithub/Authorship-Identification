@@ -1,6 +1,7 @@
 #here
 import tensorflow as tf
 import utils.glove as glove
+import utils.data_util as data_util
 import numpy as np
 #from proj_rnn_cell import RNNCell
 
@@ -35,6 +36,9 @@ print 'WV',np.shape(wordVectors)
 wordVectors=np.append(wordVectors,[np.zeros(embed_size)],axis=0)
 print 'WV',np.shape(wordVectors)
 
+wordVectors2=data_util.load_embeddings(DUMMY_PATH,embed_size)
+
+assert(wordVectors.all()==wordVectors2.all())
 
 
 # start buiding model
