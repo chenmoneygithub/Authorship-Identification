@@ -12,6 +12,7 @@ import logging
 import sys
 import time
 import os
+import pickle
 
 import file2dict as fdt
 import utils.read_minibatch as rmb
@@ -267,10 +268,13 @@ class RNNModel(AttributionModel):
         return pred2
 
     def train_model(self):
+        pkl_file = open('../data/batch_data/data.pkl', 'rb')
+       # batch_list = pickle.load(pkl_file)[0:5]
+
         cwd = os.getcwd()
         data_path = cwd + '/dataset/C50/C50train'
         auth_sent_num = fdt.file2auth_sent_num(data_path)  # read in the training data
-        auth_sent_num = auth_sent_num[0 : 100]
+        auth_sent_num = auth_sent_num[0 : 1000]
         batch_list = rmb.read_minibatch(auth_sent_num, Config.batch_size, Config.max_length)
 
         init = tf.global_variables_initializer()
@@ -284,7 +288,7 @@ class RNNModel(AttributionModel):
                     batch_feat = np.array(batch[0], dtype = np.float32)
                     batch_mask = np.array(batch[1], dtype = bool)
                    # print batch_label.shape, batch_feat.shape
-                    print "train_on_batch!"
+                    #print "train_on_batch!"
                     loss = self.train_on_batch(session, batch_feat, batch_label, batch_mask)
                     loss_list.append(loss)
                     smallIter += 1
