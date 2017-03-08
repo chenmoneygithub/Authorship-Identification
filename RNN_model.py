@@ -265,17 +265,38 @@ class RNNModel(AttributionModel):
         predictions = sess.run(tf.nn.softmax(self.pred), feed_dict=feed)
         mask2=np.stack([mask_batch for i in range(Config.n_classes)] ,2)
         pred2=np.sum(np.multiply(predictions,mask2),1)
+        pred2 = np.argmax(pred2, 1)
         return pred2
+
+    def test_model(self, session, batch_list):
+        print "Now, testing on the test set..."
+        total = 0
+        accuCount = 0
+        for batch in batch_list:
+            batch_feat = np.array(batch[0], dtype = np.float32)
+            batch_mask = np.array(batch[1], dtype = bool)
+
+            pred = self.predict_on_batch(session, batch_feat, batch_mask)
+            accuCount += np.sum(pred == batch[2])
+            total += len(batch[2])
+        accu = accuCount * 1.0 / total
+        print ("Test accuracy %f" %(accu))
 
     def train_model(self):
         pkl_file = open('../data/batch_data/data.pkl', 'rb')
-       # batch_list = pickle.load(pkl_file)[0:5]
+        batch_list = pickle.load(pkl_file)[1 : 500]
 
+        test_size = int(len(batch_list) / 10)
+        training_batch = batch_list[0 : len(batch_list) - test_size]
+        testing_batch = batch_list[len(batch_list) - test_size : len(batch_list)]
+
+        '''
         cwd = os.getcwd()
         data_path = cwd + '/dataset/C50/C50train'
         auth_sent_num = fdt.file2auth_sent_num(data_path)  # read in the training data
         auth_sent_num = auth_sent_num[0 : 1000]
         batch_list = rmb.read_minibatch(auth_sent_num, Config.batch_size, Config.max_length)
+        '''
 
         init = tf.global_variables_initializer()
         with tf.Session() as session:
@@ -283,7 +304,7 @@ class RNNModel(AttributionModel):
             for iterTime in range(Config.n_epochs):
                 loss_list = []
                 smallIter = 0
-                for batch in batch_list:
+                for batch in training_batch:
                     batch_label = rmb.convertOnehotLabel(batch[2],  Config.n_classes)
                     batch_feat = np.array(batch[0], dtype = np.float32)
                     batch_mask = np.array(batch[1], dtype = bool)
@@ -291,9 +312,13 @@ class RNNModel(AttributionModel):
                     #print "train_on_batch!"
                     loss = self.train_on_batch(session, batch_feat, batch_label, batch_mask)
                     loss_list.append(loss)
+                    #print pred
                     smallIter += 1
-                    #if(smallIter % 200 == 0):
-                    print ("Intermediate epoch %d : loss : %f" %(iterTime, np.mean(np.mean(np.array(loss)))) )
+                    if(smallIter % 20 == 0):
+                        print ("Intermediate epoch %d Total Iteration %d: loss : %f" %(iterTime, smallIter, np.mean(np.mean(np.array(loss)))) )
+                    if(smallIter % 100 == 0):
+                        self.test_model(session, testing_batch)
+
 
             print ("epoch %d : loss : %f" %(iterTime, np.mean(np.mean(np.array(loss)))) )
 
