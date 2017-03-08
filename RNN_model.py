@@ -16,7 +16,7 @@ import pickle
 
 import file2dict as fdt
 import utils.read_minibatch as rmb
-from utils.data_util import load_embeddings
+import utils.data_util as data_util
 
 from datetime import datetime
 
@@ -260,6 +260,7 @@ class RNNModel(AttributionModel):
             mask_batch: np.ndarray of shape (n_samples, max_length)
         Returns:
             predictions: np.ndarray of shape (n_samples, n_classes)
+            (after softmax)
         """
         feed = self.create_feed_dict(inputs_batch,mask_batch)
         predictions = sess.run(tf.nn.softmax(self.pred), feed_dict=feed)
@@ -339,6 +340,6 @@ if __name__ == "__main__":
     args = "gru"
     config = Config(args)
     glove_path = "../data/glove/glove.6B.50d.txt"
-    glove_vector = load_embeddings(glove_path, config.embed_size)
+    glove_vector = data_util.load_embeddings(glove_path, config.embed_size)
     model = RNNModel(config, glove_vector.astype(np.float32))
     model.train_model()
