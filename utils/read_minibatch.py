@@ -36,7 +36,7 @@ def read_minibatch(data, batch_size, max_length, shuffle = True):
     return batch_list
 
 def process_to_minibatch(data, max_length):
-    with open('../data/glove/tokenToIndex', 'r') as f:
+    with open('../../data/glove/tokenToIndex', 'r') as f:
         try:
             wordToIndex = json.load(f)
         # if the file is empty the ValueError will be thrown
