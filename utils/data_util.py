@@ -83,3 +83,44 @@ def visualize_cm(cm):
     plt.yticks(np.arange(0,l),range(l))
     plt.colorbar()
     plt.show()
+
+
+
+"""
+find the author based on prediction
+inputs:
+    preds: np array of shape (n_sentences,n_classes) after softmax
+           (likely coming from the function predict_on_batch)
+
+    method: method of calculating who the author is
+            if method is blind, it will find the author with the maximum counts
+            if method is smart, it will add the predictions and find the argmax
+
+outputs:
+    authod_id: an integer, the index of the author in n_classes
+
+"""
+def find_author(preds,method='blind'):
+    d=np.shape(preds)
+    if method=='blind':
+        preds_sum=np.sum(preds,axis=0)
+        classes=np.argmax(preds,axis=1)
+        counts=np.bincount(classes,minlength=d[1])
+
+        if count_ele(counts,np.amax(counts))==1:
+            return np.argmax(counts)
+        else
+            return find_author_smart(preds)
+    else
+        return find_author_smart(preds)
+
+def find_author_smart(preds):
+    preds_sum=np.sum(preds,axis=0)
+    return np.argmax(preds_sum)
+
+def count_ele(arr,ele):
+    cnt=0
+    for arr_ele in np.nditer(arr):
+        if arr_ele==ele:
+            cnt=cnt+1
+    return cnt
