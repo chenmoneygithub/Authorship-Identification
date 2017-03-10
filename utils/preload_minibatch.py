@@ -8,18 +8,19 @@ import pickle
 import numpy as np
 
 batch_size = 64
-max_length = 35
+max_length = 240 # for 7 sentences
 
 cwd = os.getcwd()
 data_path = cwd + '/../dataset/C50/C50train'
-auth_sent_num = fdt.file2auth_sent_num(data_path)  # read in the training data
-ind = np.arange(len(auth_sent_num))
+#auth_sent_num = fdt.file2auth_sent_num(data_path)  # read in the training data
+auth_sentbundle_num = fdt.file2auth_sentbundle_num(data_path, 7)
+ind = np.arange(len(auth_sentbundle_num))
 np.random.shuffle(ind)
 index = ind
-raw_data = [auth_sent_num[i] for i in index ]
+raw_data = [auth_sentbundle_num[i] for i in index ]
 batch_list = rmb.read_minibatch(raw_data, batch_size, max_length)
 
-output = open('../../data/batch_data/data.pkl', 'wb')
+output = open('../../data/batch_data/data_bundle.pkl', 'wb')
 pickle.dump(batch_list, output, -1)
 output.close()
 

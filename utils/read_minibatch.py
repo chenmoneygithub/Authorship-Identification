@@ -59,7 +59,10 @@ def process_to_minibatch(data, max_length):
                 #minilabel_list.append(data[i][0])
                 #minifeat_list.append([0])
             elif (j < len(data[i][1]) - 1):
-                minimask_list.append(False)
+                if(j == max_length - 1):
+                    minimask_list.append(True)
+                else:
+                    minimask_list.append(False)
                 minifeat_list.append(match_word_to_vector(data[i][1][j], wordToIndex))
                 #minilabel_list.append(data[i][0])
                 #minifeat_list.append([data[i][1][j]])

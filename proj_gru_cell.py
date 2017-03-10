@@ -30,7 +30,7 @@ class GRUCell(tf.nn.rnn_cell.RNNCell):
 
     def __call__(self, inputs, state, scope=None):
 
-        scope = scope or type(self).__name__
+        scope = "cell"
 
         with tf.variable_scope(scope):
 

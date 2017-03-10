@@ -199,14 +199,18 @@ def name2idx(path):
         idx += 1
     return dict
 
-'''
+
 def file2auth_sentbundle_num(path, sentence_num):
     output_num = extract_num(path)
     auth_news_num = dict2auth_news_num(output_num)
     bundle_sentence = []
-    temp
-    for start in range(0, sentence_num, len(auth_news_num)):
-'''
+    for news_ind in range(len(auth_news_num)):
+        for start in range(0, len(auth_news_num[news_ind][1]), 1):
+            temp_bundle = []
+            for i in range(min(sentence_num, len(auth_news_num[news_ind][1]) - start )):
+                temp_bundle.extend(auth_news_num[news_ind][1][start + i])
+            bundle_sentence.append([auth_news_num[news_ind][0], temp_bundle ])
+    return bundle_sentence
 
 """
 following is used for test
@@ -222,6 +226,12 @@ if __name__=='__main__':
 
     cwd = os.getcwd()
     test_path = cwd + '/../dataset/C50/C50train'
+
+
+    auth_sentbundle_num = file2auth_sentbundle_num(test_path, 7)
+    for x in auth_sentbundle_num:
+        print x
+        break
 
     auth_news_name = file2auth_news_name(test_path)
     for x in auth_news_name:

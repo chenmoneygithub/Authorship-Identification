@@ -48,7 +48,7 @@ class Config:
 
     window_size = 0
 
-    max_length = 35 # longest length of a sentence we will process
+    max_length = 240 # longest length of a sentence we will process
     n_classes = 51 # in total, we have 50 classes
     dropout = 0.9
 
@@ -58,6 +58,7 @@ class Config:
     batch_size = 64
 
     n_epochs = 41
+    regularization = 0.005
 
     max_grad_norm = 10.0 # max gradients norm for clipping
     lr = 0.001 # learning rate
@@ -66,6 +67,7 @@ class Config:
 
         #self.cell = args.cell
 
+        self.cell = GRUCell(Config.embed_size, Config.hidden_size)
         if "output_path" in args:
             # Where to save things.
             self.output_path = args.output_path
@@ -174,8 +176,9 @@ class RNNModel(AttributionModel):
         # Use the cell defined below. For Q2, we will just be using the
         # RNNCell you defined, but for Q3, we will run this code again
         # with a GRU cell!
+
         #cell = RNNCell(Config.embed_size, Config.hidden_size)
-        cell = GRUCell(Config.embed_size, Config.hidden_size)
+        #cell = GRUCell(Config.embed_size, Config.hidden_size)
 
 
         # Define U and b2 as variables.
@@ -194,7 +197,7 @@ class RNNModel(AttributionModel):
             for time_step in range(Config.max_length):
                 if time_step >= 1:
                     tf.get_variable_scope().reuse_variables()
-                o, h = cell(x[:,time_step,:], h)
+                o, h = config.cell(x[:,time_step,:], h)
 
                 o_drop = tf.nn.dropout(o, dropout_rate)
                 preds.append(tf.matmul(o_drop, self.U) + self.b2)
@@ -214,12 +217,21 @@ class RNNModel(AttributionModel):
         Returns:
             loss: A 0-d tensor (scalar)
         """
+
         labels_to_loss=tf.tile(self.labels_placeholder,[1, Config.max_length])
         labels_to_loss=tf.reshape(labels_to_loss,[-1,Config.max_length,Config.n_classes])
         loss = tf.nn.softmax_cross_entropy_with_logits(preds, labels_to_loss)
         loss = tf.boolean_mask(loss, self.mask_placeholder)
-        loss = tf.reduce_mean(loss)
+        loss = tf.reduce_mean(loss) + config.regularization * ( tf.nn.l2_loss(self.U) )
+        with tf.variable_scope("RNN/cell", reuse= True):
+            # add regularization
 
+            loss += config.regularization * (tf.nn.l2_loss(tf.get_variable("W_r"))
+                                             + tf.nn.l2_loss(tf.get_variable("U_r"))
+                                             + tf.nn.l2_loss(tf.get_variable("W_z"))
+                                             + tf.nn.l2_loss(tf.get_variable("U_z"))
+                                             + tf.nn.l2_loss(tf.get_variable("W_o"))
+                                             + tf.nn.l2_loss(tf.get_variable("U_o")))
         return loss
 
     def add_training_op(self, loss):
@@ -310,9 +322,10 @@ class RNNModel(AttributionModel):
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/data.pkl', 'rb')
+        pkl_file = open('../data/batch_data/data_bundle.pkl', 'rb')
 
         batch_list = pickle.load(pkl_file)
+        pkl_file.close()
 
         test_size = int(len(batch_list) / 10)
         training_batch = batch_list[0 : len(batch_list) - test_size]
@@ -321,7 +334,6 @@ class RNNModel(AttributionModel):
         testing_batch = batch_list[len(batch_list) - test_size : len(batch_list)]
 
 
-       # batch_list = pickle.load(pkl_file)[0:5]
         '''
         cwd = os.getcwd()
         data_path = cwd + '/dataset/C50/C50train'
@@ -330,12 +342,12 @@ class RNNModel(AttributionModel):
         batch_list = rmb.read_minibatch(auth_sent_num, Config.batch_size, Config.max_length)
         '''
 
-        init = tf.global_variables_initializer()
+        #init = tf.global_variables_initializer()
         saver = tf.train.Saver()
         with tf.Session() as session:
-            session.run(init)
-           # load_path = "results/RNN/20170309_080125/model.weights_450"
-           # saver.restore(session, load_path)
+            #session.run(init)
+            load_path = "results/RNN/20170310_1022/model.weights_20"
+            saver.restore(session, load_path)
             for iterTime in range(Config.n_epochs):
                 loss_list = []
                 smallIter = 0
@@ -350,11 +362,13 @@ class RNNModel(AttributionModel):
                     smallIter += 1
 
                     if(smallIter % 20 == 0):
-                       # self.test_trainset_model(session, testing_train_batch)
+
+                        self.test_trainset_model(session, testing_train_batch)
+                        self.test_model(session, testing_batch)
                         logger.info(("Intermediate epoch %d Total Iteration %d: loss : %f" %(iterTime, smallIter, np.mean(np.mean(np.array(loss)))) ))
-                if(iterTime % 5 == 0):
-                    self.test_trainset_model(session, testing_train_batch)
-                    self.test_model(session, testing_batch)
+                self.test_trainset_model(session, testing_train_batch)
+                self.test_model(session, testing_batch)
+                if(iterTime % 10 == 0):
                     logger.info(("epoch %d : loss : %f" %(iterTime, np.mean(np.mean(np.array(loss)))) ))
                     saver.save(session, self.config.model_output + "_%d"%(iterTime))
 
