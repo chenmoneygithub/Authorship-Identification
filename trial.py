@@ -242,16 +242,24 @@ def trial2():
 
 
 def trial3():
-    a=np.array([[1,2,3],[4,5,6]])
-    inputs=tf.placeholder(tf.int32,[2,3])
-    feed_dict={inputs:a}
-    b=tf.reshape(inputs,[2,3,1])
-    b=tf.tile(b,[1,1,4])
+    a=np.array([[0,0,1,0],[0,1,0,0]])
+    aa=np.random.rand(2,4,3)
+    inputs=tf.placeholder(tf.float32,[2,4])
+    inputs2=tf.placeholder(tf.float32,[2,4,3])
+    feed_dict={inputs:a,inputs2:aa}
+    b=tf.reshape(inputs,[2,4,1])
+    b=tf.tile(b,[1,1,3])
     init = tf.global_variables_initializer()
     sess=tf.Session()
     sess.run(init)
     bb=sess.run(b,feed_dict=feed_dict)
     print bb
+    b2=sess.run(inputs2,feed_dict=feed_dict)
+    print b2
+    b3=sess.run(b*inputs2,feed_dict=feed_dict)
+    print b3
+    b4=sess.run(tf.reduce_sum(b*inputs2,1),feed_dict=feed_dict)
+    print b4
 
 def main():
     #trial1()
