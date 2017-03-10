@@ -103,7 +103,7 @@ class RNNModel(AttributionModel):
         """
         self.input_placeholder = tf.placeholder(tf.int32, [None, Config.max_length])
         self.labels_placeholder = tf.placeholder(tf.int32, [None, Config.n_classes])
-        self.mask_placeholder = tf.placeholder(tf.int32, [None, Config.max_length])
+        self.mask_placeholder = tf.placeholder(tf.float32, [None, Config.max_length])
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
     def create_feed_dict(self, inputs_batch, mask_batch, labels_batch=None, dropout=1):
@@ -261,6 +261,7 @@ class RNNModel(AttributionModel):
         pred_masked=tf.multiply(preds,pred_mask)
         pred_masked=tf.reduce_sum(pred_masked,axis=1)
         loss = tf.nn.softmax_cross_entropy_with_logits(pred_masked, self.labels_placeholder)
+
         loss = tf.reduce_mean(loss) + config.regularization * ( tf.nn.l2_loss(self.U) )
         with tf.variable_scope("RNN/cell", reuse= True):
             # add regularization
