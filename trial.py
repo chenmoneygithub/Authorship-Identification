@@ -1,7 +1,7 @@
 #here
 import tensorflow as tf
 import utils.glove as glove
-import utils.data_util as data_util
+#import utils.data_util as data_util
 import numpy as np
 #from proj_rnn_cell import RNNCell
 
@@ -241,9 +241,21 @@ def trial2():
     print 'final loss',ll3
 
 
+def trial3():
+    a=np.array([[1,2,3],[4,5,6]])
+    inputs=tf.placeholder(tf.int32,[2,3])
+    feed_dict={inputs:a}
+    b=tf.reshape(inputs,[2,3,1])
+    b=tf.tile(b,[1,1,4])
+    init = tf.global_variables_initializer()
+    sess=tf.Session()
+    sess.run(init)
+    bb=sess.run(b,feed_dict=feed_dict)
+    print bb
+
 def main():
     #trial1()
-    trial2()
+    trial3()
 
 if __name__=="__main__":
     main()
