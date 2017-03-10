@@ -318,9 +318,12 @@ class RNNModel(AttributionModel):
             (after softmax)
         """
         feed = self.create_feed_dict(inputs_batch,mask_batch)
-        predictions = sess.run(tf.nn.softmax(self.pred), feed_dict=feed)
-        mask2=np.stack([mask_batch for i in range(Config.n_classes)] ,2)
-        pred2=np.sum(np.multiply(predictions,mask2),1)
+        predictions = sess.run(self.pred, feed_dict=feed)
+        pred_mask=sess.run(self.mask_placeholder,feed_dict=feed)
+        pred_mask=np.reshape(pred_mask,(-1,Config.max_length,1))
+        pred_mask=np.tile(pred_mask,(1,1,Config.n_classes))
+        pred_masked=predictions*pred_mask
+        pred_masked=tf.reduce_sum(pred_masked,axis=1)
         return pred2
 
 
