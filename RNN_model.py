@@ -258,7 +258,8 @@ class RNNModel(AttributionModel):
             loss: A 0-d tensor (scalar)
         """
 
-        labels_to_loss=tf.tile(self.labels_placeholder,[1, Config.max_length])
+        labels_to_loss=tf.tile(self.labels_placeholder,[Config.max_length, 1])
+        labels_to_loss = tf.transpose(labels_to_loss)
         labels_to_loss=tf.reshape(labels_to_loss,[-1,Config.max_length,Config.n_classes])
         loss = tf.nn.softmax_cross_entropy_with_logits(preds, labels_to_loss)
         loss = tf.boolean_mask(loss, self.mask_placeholder)
@@ -347,7 +348,7 @@ class RNNModel(AttributionModel):
             batch_mask = np.array(batch[1], dtype = bool)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
-            accuCount += np.sum(np.argmax(pred,1 == batch[2]))
+            accuCount += np.sum(np.argmax(pred,1) == batch[2])
             total += len(batch[2])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy on training set is: %f" %(accu)) )
