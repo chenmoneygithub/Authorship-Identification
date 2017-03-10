@@ -199,18 +199,29 @@ def name2idx(path):
         idx += 1
     return dict
 
+'''
+def file2auth_sentbundle_num(path, sentence_num):
+    output_num = extract_num(path)
+    auth_news_num = dict2auth_news_num(output_num)
+    bundle_sentence = []
+    temp
+    for start in range(0, sentence_num, len(auth_news_num)):
+'''
+
 """
 following is used for test
 """
 if __name__=='__main__':
+    '''
     from timeit import Timer
     t1=Timer("extract_name(\"./dataset/C50/C50train\")","from __main__ import extract_name")
     t2=Timer("extract_num(\"./dataset/C50/C50train\")","from __main__ import extract_num")
     print t1.timeit(1)
     print t2.timeit(1)
+    '''
 
     cwd = os.getcwd()
-    test_path = cwd + '/dataset/C50/C50train'
+    test_path = cwd + '/../dataset/C50/C50train'
 
     auth_news_name = file2auth_news_name(test_path)
     for x in auth_news_name:

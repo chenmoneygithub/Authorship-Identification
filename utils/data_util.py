@@ -109,9 +109,9 @@ def find_author(preds,method='blind'):
 
         if count_ele(counts,np.amax(counts))==1:
             return np.argmax(counts)
-        else
+        else:
             return find_author_smart(preds)
-    else
+    else:
         return find_author_smart(preds)
 
 def find_author_smart(preds):

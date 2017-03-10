@@ -25,6 +25,7 @@ import numpy as np
 
 from AttributionModel import AttributionModel
 from proj_rnn_cell import RNNCell
+from proj_gru_cell import GRUCell
 
 # from util import print_sentence, write_conll, read_conll
 # from data_util import load_and_preprocess_data, load_embeddings, ModelHelper
@@ -56,7 +57,7 @@ class Config:
     hidden_size = 300
     batch_size = 64
 
-    n_epochs = 1000
+    n_epochs = 41
 
     max_grad_norm = 10.0 # max gradients norm for clipping
     lr = 0.001 # learning rate
@@ -173,7 +174,9 @@ class RNNModel(AttributionModel):
         # Use the cell defined below. For Q2, we will just be using the
         # RNNCell you defined, but for Q3, we will run this code again
         # with a GRU cell!
-        cell = RNNCell(Config.embed_size, Config.hidden_size)
+        #cell = RNNCell(Config.embed_size, Config.hidden_size)
+        cell = GRUCell(Config.embed_size, Config.hidden_size)
+
 
         # Define U and b2 as variables.
         # Initialize state as vector of zeros.
@@ -266,6 +269,7 @@ class RNNModel(AttributionModel):
         predictions = sess.run(tf.nn.softmax(self.pred), feed_dict=feed)
         mask2=np.stack([mask_batch for i in range(Config.n_classes)] ,2)
         pred2=np.sum(np.multiply(predictions,mask2),1)
+        pred2 = np.argmax(pred2, 1)
         return pred2
 
 
@@ -326,19 +330,17 @@ class RNNModel(AttributionModel):
         batch_list = rmb.read_minibatch(auth_sent_num, Config.batch_size, Config.max_length)
         '''
 
-        #init = tf.global_variables_initializer()
+        init = tf.global_variables_initializer()
         saver = tf.train.Saver()
         with tf.Session() as session:
-           # session.run(init)
-            load_path = "results/RNN/20170309_080125/model.weights_450"
-            saver.restore(session, load_path)
+            session.run(init)
+           # load_path = "results/RNN/20170309_080125/model.weights_450"
+           # saver.restore(session, load_path)
             for iterTime in range(Config.n_epochs):
                 loss_list = []
                 smallIter = 0
-                for batch in training_batch:
-                    batch_label = rmb.convertOnehotLabel(batch[2],  Config.n_classes) # convert label index into one-hot vector
 
-                for batch in batch_list:
+                for batch in training_batch:
                     batch_label = rmb.convertOnehotLabel(batch[2],  Config.n_classes)
 
                     batch_feat = np.array(batch[0], dtype = np.float32)
@@ -350,8 +352,7 @@ class RNNModel(AttributionModel):
                     if(smallIter % 20 == 0):
                        # self.test_trainset_model(session, testing_train_batch)
                         logger.info(("Intermediate epoch %d Total Iteration %d: loss : %f" %(iterTime, smallIter, np.mean(np.mean(np.array(loss)))) ))
-
-                if(iterTime % 50 == 0):
+                if(iterTime % 5 == 0):
                     self.test_trainset_model(session, testing_train_batch)
                     self.test_model(session, testing_batch)
                     logger.info(("epoch %d : loss : %f" %(iterTime, np.mean(np.mean(np.array(loss)))) ))
