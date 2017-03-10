@@ -3,6 +3,7 @@
 
 import file2dict as fdt
 import read_minibatch as rmb
+import read_minibatch_avemask as rmba
 import os
 import pickle
 import numpy as np
@@ -18,9 +19,10 @@ ind = np.arange(len(auth_sentbundle_num))
 np.random.shuffle(ind)
 index = ind
 raw_data = [auth_sentbundle_num[i] for i in index ]
-batch_list = rmb.read_minibatch(raw_data, batch_size, max_length)
+#batch_list = rmb.read_minibatch(raw_data, batch_size, max_length)
+batch_list = rmba.read_minibatch(raw_data, batch_size, max_length)
 
-output = open('../../data/batch_data/data_bundle.pkl', 'wb')
+output = open('../../data/batch_data/data_bundle_seqmask.pkl', 'wb')
 pickle.dump(batch_list, output, -1)
 output.close()
 

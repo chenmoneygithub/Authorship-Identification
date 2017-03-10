@@ -103,7 +103,7 @@ class RNNModel(AttributionModel):
         """
         self.input_placeholder = tf.placeholder(tf.int32, [None, Config.max_length])
         self.labels_placeholder = tf.placeholder(tf.int32, [None, Config.n_classes])
-        self.mask_placeholder = tf.placeholder(tf.int32, [None, Config.max_length])
+        self.mask_placeholder = tf.placeholder(tf.float32, [None, Config.max_length])
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
     def create_feed_dict(self, inputs_batch, mask_batch, labels_batch=None, dropout=1):
@@ -331,7 +331,7 @@ class RNNModel(AttributionModel):
         accuCount = 0
         for batch in batch_list:
             batch_feat = np.array(batch[0], dtype = np.float32)
-            batch_mask = np.array(batch[1], dtype = bool)
+            batch_mask = np.array(batch[1], dtype = np.float32)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
             accuCount += np.sum(np.argmax(pred,1) == batch[2])
@@ -345,7 +345,7 @@ class RNNModel(AttributionModel):
         accuCount = 0
         for batch in batch_list:
             batch_feat = np.array(batch[0], dtype = np.float32)
-            batch_mask = np.array(batch[1], dtype = bool)
+            batch_mask = np.array(batch[1], dtype = np.float32)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
             accuCount += np.sum(np.argmax(pred,1) == batch[2])
@@ -382,12 +382,12 @@ class RNNModel(AttributionModel):
         batch_list = rmb.read_minibatch(auth_sent_num, Config.batch_size, Config.max_length)
         '''
 
-        #init = tf.global_variables_initializer()
+        init = tf.global_variables_initializer()
         saver = tf.train.Saver()
         with tf.Session() as session:
-            #session.run(init)
-            load_path = "results/RNN/20170310_1022/model.weights_20"
-            saver.restore(session, load_path)
+            session.run(init)
+            #load_path = "results/RNN/20170310_1022/model.weights_20"
+            #saver.restore(session, load_path)
             for iterTime in range(Config.n_epochs):
                 loss_list = []
                 smallIter = 0
@@ -396,15 +396,15 @@ class RNNModel(AttributionModel):
                     batch_label = rmb.convertOnehotLabel(batch[2],  Config.n_classes)
 
                     batch_feat = np.array(batch[0], dtype = np.float32)
-                    batch_mask = np.array(batch[1], dtype = bool)
+                    batch_mask = np.array(batch[1], dtype = np.float32)
                     loss = self.train_on_batch(session, batch_feat, batch_label, batch_mask)
                     loss_list.append(loss)
                     smallIter += 1
 
                     if(smallIter % 20 == 0):
 
-                        self.test_trainset_model(session, testing_train_batch)
-                        self.test_model(session, testing_batch)
+                        #self.test_trainset_model(session, testing_train_batch)
+                        #self.test_model(session, testing_batch)
                         logger.info(("Intermediate epoch %d Total Iteration %d: loss : %f" %(iterTime, smallIter, np.mean(np.mean(np.array(loss)))) ))
                 self.test_trainset_model(session, testing_train_batch)
                 self.test_model(session, testing_batch)
