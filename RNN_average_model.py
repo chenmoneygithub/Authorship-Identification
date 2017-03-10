@@ -48,7 +48,7 @@ class Config:
 
     window_size = 0
 
-    max_length = 240 # longest length of a sentence we will process
+    max_length = 100 # longest length of a sentence we will process
     n_classes = 51 # in total, we have 50 classes
     dropout = 0.9
 
@@ -58,7 +58,7 @@ class Config:
     batch_size = 64
 
     n_epochs = 41
-    regularization = 0.005
+    regularization = 0
 
     max_grad_norm = 10.0 # max gradients norm for clipping
     lr = 0.001 # learning rate
@@ -323,8 +323,8 @@ class RNNModel(AttributionModel):
         pred_mask=np.reshape(pred_mask,(-1,Config.max_length,1))
         pred_mask=np.tile(pred_mask,(1,1,Config.n_classes))
         pred_masked=predictions*pred_mask
-        pred_masked=tf.reduce_sum(pred_masked,axis=1)
-        return pred2
+        pred_masked=np.sum(pred_masked,axis=1)
+        return pred_masked
 
 
     def test_model(self, session, batch_list):
@@ -350,7 +350,7 @@ class RNNModel(AttributionModel):
             batch_mask = np.array(batch[1], dtype = bool)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
-            accuCount += np.sum(np.argmax(pred,1 == batch[2]))
+            accuCount += np.sum(np.argmax(pred,1) == batch[2])
             total += len(batch[2])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy on training set is: %f" %(accu)) )
@@ -364,7 +364,7 @@ class RNNModel(AttributionModel):
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/data_bundle.pkl', 'rb')
+        pkl_file = open('../data/batch_data/data_bundle_seqmask.pkl', 'rb')
 
         batch_list = pickle.load(pkl_file)
         pkl_file.close()
@@ -384,12 +384,12 @@ class RNNModel(AttributionModel):
         batch_list = rmb.read_minibatch(auth_sent_num, Config.batch_size, Config.max_length)
         '''
 
-        #init = tf.global_variables_initializer()
+        init = tf.global_variables_initializer()
         saver = tf.train.Saver()
         with tf.Session() as session:
-            #session.run(init)
-            load_path = "results/RNN/20170310_1022/model.weights_20"
-            saver.restore(session, load_path)
+            session.run(init)
+            #load_path = "results/RNN/20170310_1022/model.weights_20"
+            #saver.restore(session, load_path)
             for iterTime in range(Config.n_epochs):
                 loss_list = []
                 smallIter = 0
@@ -405,8 +405,8 @@ class RNNModel(AttributionModel):
 
                     if(smallIter % 20 == 0):
 
-                        self.test_trainset_model(session, testing_train_batch)
-                        self.test_model(session, testing_batch)
+                        #self.test_trainset_model(session, testing_train_batch)
+                        #self.test_model(session, testing_batch)
                         logger.info(("Intermediate epoch %d Total Iteration %d: loss : %f" %(iterTime, smallIter, np.mean(np.mean(np.array(loss)))) ))
                 self.test_trainset_model(session, testing_train_batch)
                 self.test_model(session, testing_batch)

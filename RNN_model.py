@@ -48,7 +48,7 @@ class Config:
 
     window_size = 0
 
-    max_length = 240 # longest length of a sentence we will process
+    max_length = 35 # longest length of a sentence we will process
     n_classes = 51 # in total, we have 50 classes
     dropout = 0.9
 
@@ -58,7 +58,7 @@ class Config:
     batch_size = 64
 
     n_epochs = 41
-    regularization = 0.005
+    regularization = 0
 
     max_grad_norm = 10.0 # max gradients norm for clipping
     lr = 0.001 # learning rate
@@ -362,7 +362,7 @@ class RNNModel(AttributionModel):
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/data_bundle.pkl', 'rb')
+        pkl_file = open('../data/batch_data/data.pkl', 'rb')
 
         batch_list = pickle.load(pkl_file)
         pkl_file.close()
@@ -403,9 +403,10 @@ class RNNModel(AttributionModel):
 
                     if(smallIter % 20 == 0):
 
-                        #self.test_trainset_model(session, testing_train_batch)
-                        #self.test_model(session, testing_batch)
+                        self.test_trainset_model(session, testing_train_batch)
+                        self.test_model(session, testing_batch)
                         logger.info(("Intermediate epoch %d Total Iteration %d: loss : %f" %(iterTime, smallIter, np.mean(np.mean(np.array(loss)))) ))
+
                 self.test_trainset_model(session, testing_train_batch)
                 self.test_model(session, testing_batch)
                 if(iterTime % 10 == 0):

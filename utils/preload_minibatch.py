@@ -9,7 +9,7 @@ import pickle
 import numpy as np
 
 batch_size = 64
-max_length = 240 # for 7 sentences
+max_length = 100 # for 3 sentences
 
 cwd = os.getcwd()
 data_path = cwd + '/../dataset/C50/C50train'
