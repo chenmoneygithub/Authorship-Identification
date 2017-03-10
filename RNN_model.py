@@ -46,6 +46,8 @@ class Config:
     instantiation.
     """
 
+    cell_type="gru" # either rnn, gru or lstm
+
     window_size = 0
 
     max_length = 240 # longest length of a sentence we will process
@@ -169,9 +171,34 @@ class RNNModel(AttributionModel):
         """
 
         x = self.add_embedding()
-        dropout_rate = self.dropout_placeholder
 
-        preds = [] # Predicted output at each timestep should go here!
+        if Config.cell_type=="lstm":
+            print "lstm"
+            cell_state = tf.zeros([tf.shape(x)[0], Config.hidden_size])
+            hidden_state = tf.zeros([tf.shape(x)[0], Config.hidden_size])
+            init_state = tf.nn.rnn_cell.LSTMStateTuple(cell_state, hidden_state)
+            cell = tf.nn.rnn_cell.BasicLSTMCell(Config.hidden_size, state_is_tuple=True)
+            inputs_series=tf.split(1,Config.max_length,x)
+            outputs, current_state = tf.nn.rnn(cell, inputs_series, init_state)
+
+
+            self.U = tf.get_variable('U',
+                                  [Config.hidden_size, Config.n_classes],
+                                  initializer = tf.contrib.layers.xavier_initializer())
+            self.b2 = tf.get_variable('b2',
+                                  [Config.n_classes, ],
+                                  initializer = tf.contrib.layers.xavier_initializer())
+            h = tf.zeros([tf.shape(x)[0], Config.hidden_size])
+
+            preds=[tf.matmul(o, self.U) + self.b2 for o in outputs]
+            preds=tf.pack(preds)
+            preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
+            return preds
+
+
+        else:
+            dropout_rate = self.dropout_placeholder
+
 
         # Use the cell defined below. For Q2, we will just be using the
         # RNNCell you defined, but for Q3, we will run this code again
@@ -180,33 +207,46 @@ class RNNModel(AttributionModel):
         #cell = RNNCell(Config.embed_size, Config.hidden_size)
         #cell = GRUCell(Config.embed_size, Config.hidden_size)
 
+            preds = [] # Predicted output at each timestep should go here!
 
-        # Define U and b2 as variables.
-        # Initialize state as vector of zeros.
 
-        self.U = tf.get_variable('U',
-                              [Config.hidden_size, Config.n_classes],
-                              initializer = tf.contrib.layers.xavier_initializer())
-        self.b2 = tf.get_variable('b2',
-                              [Config.n_classes, ],
-                              initializer = tf.contrib.layers.xavier_initializer())
-        h = tf.zeros([tf.shape(x)[0], Config.hidden_size])
+            # Use the cell defined below. For Q2, we will just be using the
+            # RNNCell you defined, but for Q3, we will run this code again
+            # with a GRU cell!
+            if Config.cell_type=="rnn":
+                cell = RNNCell(Config.embed_size, Config.hidden_size)
+            elif Config.cell_type=="gru":
+                cell = GRUCell(Config.embed_size, Config.hidden_size)
+            else:
+                assert False, "Cell type undefined"
+            # Define U and b2 as variables.
+            # Initialize state as vector of zeros.
 
-        with tf.variable_scope("RNN"):
+            self.U = tf.get_variable('U',
+                                  [Config.hidden_size, Config.n_classes],
+                                  initializer = tf.contrib.layers.xavier_initializer())
+            self.b2 = tf.get_variable('b2',
+                                  [Config.n_classes, ],
+                                  initializer = tf.contrib.layers.xavier_initializer())
+            h = tf.zeros([tf.shape(x)[0], Config.hidden_size])
 
-            for time_step in range(Config.max_length):
-                if time_step >= 1:
-                    tf.get_variable_scope().reuse_variables()
-                o, h = config.cell(x[:,time_step,:], h)
+            with tf.variable_scope("RNN"):
 
-                o_drop = tf.nn.dropout(o, dropout_rate)
-                preds.append(tf.matmul(o_drop, self.U) + self.b2)
+                for time_step in range(Config.max_length):
+                    if time_step >= 1:
+                        tf.get_variable_scope().reuse_variables()
+                    o, h = cell(x[:,time_step,:], h)
 
-        # Make sure to reshape @preds here.
+                    o_drop = tf.nn.dropout(o, dropout_rate)
+                    preds.append(tf.matmul(o_drop, self.U) + self.b2)
 
-        preds=tf.pack(preds)
-        preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
-        return preds
+
+            # Make sure to reshape @preds here.
+
+            preds=tf.pack(preds)
+            preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
+            return preds
+
 
     def add_loss_op(self, preds):
         """Adds Ops for the loss function to the computational graph.
@@ -281,7 +321,6 @@ class RNNModel(AttributionModel):
         predictions = sess.run(tf.nn.softmax(self.pred), feed_dict=feed)
         mask2=np.stack([mask_batch for i in range(Config.n_classes)] ,2)
         pred2=np.sum(np.multiply(predictions,mask2),1)
-        pred2 = np.argmax(pred2, 1)
         return pred2
 
 
@@ -294,7 +333,7 @@ class RNNModel(AttributionModel):
             batch_mask = np.array(batch[1], dtype = bool)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
-            accuCount += np.sum(pred == batch[2])
+            accuCount += np.sum(np.argmax(pred,1) == batch[2])
             total += len(batch[2])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy %f" %(accu)) )
@@ -308,7 +347,7 @@ class RNNModel(AttributionModel):
             batch_mask = np.array(batch[1], dtype = bool)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
-            accuCount += np.sum(pred == batch[2])
+            accuCount += np.sum(np.argmax(pred,1 == batch[2]))
             total += len(batch[2])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy on training set is: %f" %(accu)) )
