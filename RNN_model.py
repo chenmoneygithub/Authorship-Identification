@@ -46,7 +46,8 @@ class Config:
     instantiation.
     """
 
-    cell_type="rnn"
+    cell_type="gru" # either rnn, gru or lstm
+
     window_size = 0
 
     max_length = 35 # longest length of a sentence we will process
@@ -192,41 +193,7 @@ class RNNModel(AttributionModel):
             preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
             return preds
 
-<<<<<<< Updated upstream
-        # Use the cell defined below. For Q2, we will just be using the
-        # RNNCell you defined, but for Q3, we will run this code again
-        # with a GRU cell!
-        #cell = RNNCell(Config.embed_size, Config.hidden_size)
-        cell = GRUCell(Config.embed_size, Config.hidden_size)
 
-
-        # Define U and b2 as variables.
-        # Initialize state as vector of zeros.
-
-        self.U = tf.get_variable('U',
-                              [Config.hidden_size, Config.n_classes],
-                              initializer = tf.contrib.layers.xavier_initializer())
-        self.b2 = tf.get_variable('b2',
-                              [Config.n_classes, ],
-                              initializer = tf.contrib.layers.xavier_initializer())
-        h = tf.zeros([tf.shape(x)[0], Config.hidden_size])
-
-        with tf.variable_scope("RNN"):
-
-            for time_step in range(Config.max_length):
-                if time_step >= 1:
-                    tf.get_variable_scope().reuse_variables()
-                o, h = cell(x[:,time_step,:], h)
-
-                o_drop = tf.nn.dropout(o, dropout_rate)
-                preds.append(tf.matmul(o_drop, self.U) + self.b2)
-
-        # Make sure to reshape @preds here.
-
-        preds=tf.pack(preds)
-        preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
-        return preds
-=======
         else:
             dropout_rate = self.dropout_placeholder
 
@@ -267,7 +234,7 @@ class RNNModel(AttributionModel):
             preds=tf.pack(preds)
             preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
             return preds
->>>>>>> Stashed changes
+
 
     def add_loss_op(self, preds):
         """Adds Ops for the loss function to the computational graph.
@@ -333,7 +300,6 @@ class RNNModel(AttributionModel):
         predictions = sess.run(tf.nn.softmax(self.pred), feed_dict=feed)
         mask2=np.stack([mask_batch for i in range(Config.n_classes)] ,2)
         pred2=np.sum(np.multiply(predictions,mask2),1)
-        pred2 = np.argmax(pred2, 1)
         return pred2
 
 
@@ -346,7 +312,7 @@ class RNNModel(AttributionModel):
             batch_mask = np.array(batch[1], dtype = bool)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
-            accuCount += np.sum(pred == batch[2])
+            accuCount += np.sum(np.argmax(pred,1) == batch[2])
             total += len(batch[2])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy %f" %(accu)) )
@@ -360,7 +326,7 @@ class RNNModel(AttributionModel):
             batch_mask = np.array(batch[1], dtype = bool)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
-            accuCount += np.sum(pred == batch[2])
+            accuCount += np.sum(np.argmax(pred,1 == batch[2])
             total += len(batch[2])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy on training set is: %f" %(accu)) )
