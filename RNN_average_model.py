@@ -103,7 +103,7 @@ class RNNModel(AttributionModel):
         """
         self.input_placeholder = tf.placeholder(tf.int32, [None, Config.max_length])
         self.labels_placeholder = tf.placeholder(tf.int32, [None, Config.n_classes])
-        self.mask_placeholder = tf.placeholder(tf.int32, [None, Config.max_length])
+        self.mask_placeholder = tf.placeholder(tf.float32, [None, Config.max_length])
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
     def create_feed_dict(self, inputs_batch, mask_batch, labels_batch=None, dropout=1):
@@ -256,7 +256,6 @@ class RNNModel(AttributionModel):
             loss: A 0-d tensor (scalar)
         """
 
-
         pred_mask=tf.reshape(self.mask_placeholder,[-1,Config.max_length,1])
         pred_mask=tf.tile(pred_mask,[1,1,Config.n_classes])
         pred_masked=tf.multiply(preds,pred_mask)
@@ -348,7 +347,7 @@ class RNNModel(AttributionModel):
             batch_mask = np.array(batch[1], dtype = bool)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
-            accuCount += np.sum(np.argmax(pred,1) == batch[2])
+            accuCount += np.sum(np.argmax(pred,1 == batch[2]))
             total += len(batch[2])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy on training set is: %f" %(accu)) )
