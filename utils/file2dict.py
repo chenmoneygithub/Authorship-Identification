@@ -62,7 +62,11 @@ def extract_name(path):
         news_vec_list = []
         for news_dir in newss:                      # traverse each file in file_list
             news_vec = read_myfile(news_dir)        # parse file to sentence list
-            news_vec_list.append(news_vec)
+            real_news_vec = []
+            for vec in news_vec:
+                if len(vec) > 1:
+                    real_news_vec.append(vec)
+            news_vec_list.append(real_news_vec)
         portfolio[author] = news_vec_list
     return portfolio
 
@@ -83,7 +87,11 @@ def extract_num(path):
         news_vec_list = []
         for news_dir in newss_dir:                  # traverse each file in file_list
             news_vec = read_myfile(news_dir)        # parse file to sentence list
-            news_vec_list.append(news_vec)
+            real_news_vec = []
+            for vec in news_vec:
+                if len(vec) > 1:
+                    real_news_vec.append(vec)
+            news_vec_list.append(real_news_vec)
         portfolio[idx] = news_vec_list
         idx += 1
     return portfolio
@@ -166,6 +174,7 @@ output: author-sent list
 def file2auth_sent_name(path):
     output_name = extract_name(path)
     auth_sent_name = dict2auth_sent_name(output_name)
+  #  auth_sent_name = removeZeroLen(auth_sent_name)
     return auth_sent_name
 
 """
@@ -184,6 +193,7 @@ output: author-sent list
 def file2auth_sent_num(path):
     output_num = extract_num(path)
     auth_sent_num = dict2auth_sent_num(output_num)
+   # auth_sent_num = removeZeroLen(auth_sent_num)
     return auth_sent_num
 
 """
@@ -212,6 +222,13 @@ def file2auth_sentbundle_num(path, sentence_num):
             bundle_sentence.append([auth_news_num[news_ind][0], temp_bundle ])
     return bundle_sentence
 
+def removeZeroLen(list_sent):
+    res = []
+    for i in range(len(list_sent)):
+        if len(list_sent[i][1]) > 1:
+            res.append(list_sent[i])
+    return res
+
 """
 following is used for test
 """
@@ -225,7 +242,7 @@ if __name__=='__main__':
     '''
 
     cwd = os.getcwd()
-    test_path = cwd + '/../dataset/C50/C50train'
+    test_path = cwd + '/../dataset/bbc'
 
 
     auth_sentbundle_num = file2auth_sentbundle_num(test_path, 7)

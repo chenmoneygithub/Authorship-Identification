@@ -333,7 +333,7 @@ class RNNModel(AttributionModel):
         accuCount = 0
         for batch in batch_list:
             batch_feat = np.array(batch[0], dtype = np.float32)
-            batch_mask = np.array(batch[1], dtype = bool)
+            batch_mask = np.array(batch[1], dtype = np.float32)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
             accuCount += np.sum(np.argmax(pred,1) == batch[2])
@@ -347,7 +347,7 @@ class RNNModel(AttributionModel):
         accuCount = 0
         for batch in batch_list:
             batch_feat = np.array(batch[0], dtype = np.float32)
-            batch_mask = np.array(batch[1], dtype = bool)
+            batch_mask = np.array(batch[1], dtype = np.float32)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
             accuCount += np.sum(np.argmax(pred,1) == batch[2])
@@ -398,7 +398,7 @@ class RNNModel(AttributionModel):
                     batch_label = rmb.convertOnehotLabel(batch[2],  Config.n_classes)
 
                     batch_feat = np.array(batch[0], dtype = np.float32)
-                    batch_mask = np.array(batch[1], dtype = bool)
+                    batch_mask = np.array(batch[1], dtype = np.float32)
                     loss = self.train_on_batch(session, batch_feat, batch_label, batch_mask)
                     loss_list.append(loss)
                     smallIter += 1

@@ -84,11 +84,11 @@ def process_to_minibatch(data, max_length):
 
 def match_word_to_vector(word, word_dict):
     # this function is to map a word to its Glove vector
-    if(word in word_dict):
-        ind = word_dict[word]
+    if(str.lower(word) in word_dict):
+        ind = word_dict[str.lower(word)]
         return ind
     else:
-        return 0
+        return word_dict["cqian23th7zhangrao"]
 
 
 def convertOnehotLabel(label_index_list, n_classes):

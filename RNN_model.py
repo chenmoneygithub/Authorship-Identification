@@ -48,7 +48,7 @@ class Config:
 
     window_size = 0
 
-    max_length = 35 # longest length of a sentence we will process
+    max_length = 100 # longest length of a sentence we will process
     n_classes = 51 # in total, we have 50 classes
     dropout = 0.9
 
@@ -362,7 +362,7 @@ class RNNModel(AttributionModel):
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/data.pkl', 'rb')
+        pkl_file = open('../data/batch_data/bbc/data_bundle.pkl', 'rb')
 
         batch_list = pickle.load(pkl_file)
         pkl_file.close()
