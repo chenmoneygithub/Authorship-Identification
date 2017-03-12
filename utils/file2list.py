@@ -75,8 +75,8 @@ def file2list(input_dir):
 cwd = os.getcwd()
 test_path = cwd + '/../dataset/gutenberg'
 res = file2list(test_path)
-print len(res)
 
+print len(res)
 for ii in xrange(len(res)):
     if ii % 100 == 0:
         print res[ii]
