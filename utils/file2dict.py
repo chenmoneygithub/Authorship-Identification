@@ -40,7 +40,7 @@ def read_myfile(path):
             words_list = []
             words = sentence.strip().split(" ")     # split sentence to words
             for word in words:
-                word = word.strip(" ,)(][{}#$%\"\'")         # strip a word
+                word = word.strip(" ,)(][{}#$%\"\'").lower()         # strip a word
                 words_list.append(word)
             if len(words_list) >= 1:                # at least 1 word
                 f_list.append(words_list)
