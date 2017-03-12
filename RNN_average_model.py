@@ -48,8 +48,8 @@ class Config:
 
     window_size = 0
 
-    max_length = 100 # longest length of a sentence we will process
-    n_classes = 51 # in total, we have 50 classes
+    max_length = 70 # longest length of a sentence we will process
+    n_classes = 5 # in total, we have 50 classes
     dropout = 0.9
 
     embed_size = 50
@@ -258,7 +258,7 @@ class RNNModel(AttributionModel):
 
         pred_mask=tf.reshape(self.mask_placeholder,[-1,Config.max_length,1])
         pred_mask=tf.tile(pred_mask,[1,1,Config.n_classes])
-        pred_masked=tf.multiply(preds,pred_mask)
+        pred_masked= preds * pred_mask
         pred_masked=tf.reduce_sum(pred_masked,axis=1)
         loss = tf.nn.softmax_cross_entropy_with_logits(pred_masked, self.labels_placeholder)
 
@@ -332,7 +332,7 @@ class RNNModel(AttributionModel):
         total = 0
         accuCount = 0
         for batch in batch_list:
-            batch_feat = np.array(batch[0], dtype = np.float32)
+            batch_feat = np.array(batch[0], dtype = np.int32)
             batch_mask = np.array(batch[1], dtype = np.float32)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
@@ -346,7 +346,7 @@ class RNNModel(AttributionModel):
         total = 0
         accuCount = 0
         for batch in batch_list:
-            batch_feat = np.array(batch[0], dtype = np.float32)
+            batch_feat = np.array(batch[0], dtype = np.int32)
             batch_mask = np.array(batch[1], dtype = np.float32)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
@@ -364,7 +364,7 @@ class RNNModel(AttributionModel):
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/data_bundle_seqmask.pkl', 'rb')
+        pkl_file = open('../data/batch_data/bbc/data_bundle_seq.pkl', 'rb')
 
         batch_list = pickle.load(pkl_file)
         pkl_file.close()
@@ -397,7 +397,7 @@ class RNNModel(AttributionModel):
                 for batch in training_batch:
                     batch_label = rmb.convertOnehotLabel(batch[2],  Config.n_classes)
 
-                    batch_feat = np.array(batch[0], dtype = np.float32)
+                    batch_feat = np.array(batch[0], dtype = np.int32)
                     batch_mask = np.array(batch[1], dtype = np.float32)
                     loss = self.train_on_batch(session, batch_feat, batch_label, batch_mask)
                     loss_list.append(loss)

@@ -215,7 +215,7 @@ def file2auth_sentbundle_num(path, sentence_num):
     auth_news_num = dict2auth_news_num(output_num)
     bundle_sentence = []
     for news_ind in range(len(auth_news_num)):
-        for start in range(0, len(auth_news_num[news_ind][1]), 1):
+        for start in range(0, len(auth_news_num[news_ind][1]), 2):
             temp_bundle = []
             for i in range(min(sentence_num, len(auth_news_num[news_ind][1]) - start )):
                 temp_bundle.extend(auth_news_num[news_ind][1][start + i])
@@ -245,7 +245,7 @@ if __name__=='__main__':
     test_path = cwd + '/../dataset/bbc'
 
 
-    auth_sentbundle_num = file2auth_sentbundle_num(test_path, 7)
+    auth_sentbundle_num = file2auth_sentbundle_num(test_path, 3)
     for x in auth_sentbundle_num:
         print x
         break

@@ -3,6 +3,7 @@ import tensorflow as tf
 import utils.glove as glove
 #import utils.data_util as data_util
 import numpy as np
+import pickle
 #from proj_rnn_cell import RNNCell
 
 
@@ -261,9 +262,19 @@ def trial3():
     b4=sess.run(tf.reduce_sum(b*inputs2,1),feed_dict=feed_dict)
     print b4
 
+def trial4():
+    pkl_file = open('../data/batch_data/bbc/data_bundle.pkl', 'rb')
+
+    batch_list = pickle.load(pkl_file)
+    print batch_list
+    pkl_file.close()
+
+
+
+
 def main():
     #trial1()
-    trial3()
+    trial4()
 
 if __name__=="__main__":
     main()

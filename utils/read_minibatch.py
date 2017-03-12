@@ -82,6 +82,57 @@ def process_to_minibatch(data, max_length):
     return batch
 
 
+def process_word2num(auth_news_list, word_dict, glove, max_length):
+    res = []
+    pad_zero = np.zeros(50, ).tolist()
+    for news_ind in range(len(auth_news_list)):
+        cur_list = []
+        mask_list = []
+        for sent_ind in range(max_length):
+            sent_temp = np.zeros(50, )
+            total = 0
+            if sent_ind < len(auth_news_list[news_ind][1]):
+                for word_ind in range(len(auth_news_list[news_ind][1][sent_ind])):
+                    if word_dict.has_key(str.lower(auth_news_list[news_ind][1][sent_ind][word_ind])):
+                        glove_ind = word_dict[str.lower(auth_news_list[news_ind][1][sent_ind][word_ind])]
+                        sent_temp += glove[glove_ind]
+                        total += 1
+                if(total == 0):
+                    cur_list.append(pad_zero)
+                else:
+                    sent_temp /= total
+                    cur_list.append(sent_temp)
+                mask_list.append(True)
+            else:
+                cur_list.append(pad_zero)
+                mask_list.append(False)
+        res.append([ auth_news_list[news_ind][0], cur_list, mask_list ])
+
+    return res
+
+def pack_batch_list(batch_list, batch_size):
+    '''
+
+    Args:
+        batch_list:
+            batch_list[0]: label
+            batch_list[1]: feature
+            batch_list[2]: mask
+    Returns:
+        packed batch list
+    '''
+    packed_list = []
+    for start in range(0, len(batch_list), batch_size):
+        label_batch = []
+        feat_batch = []
+        mask_batch = []
+        for i in range(min(len(batch_list), start + batch_size)):
+            label_batch.append(batch_list[i][0])
+            feat_batch.append(batch_list[i][1])
+            mask_batch.append(batch_list[i][2])
+        packed_list.append([label_batch, feat_batch, mask_batch])
+    return packed_list
+
 def match_word_to_vector(word, word_dict):
     # this function is to map a word to its Glove vector
     if(str.lower(word) in word_dict):

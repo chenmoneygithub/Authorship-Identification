@@ -48,14 +48,14 @@ class Config:
 
     window_size = 0
 
-    max_length = 70 # longest length of a sentence we will process
+    max_length = 15 # longest length of a sentence we will process
     n_classes = 5 # in total, we have 50 classes
     dropout = 0.9
 
     embed_size = 50
 
     hidden_size = 300
-    batch_size = 64
+    batch_size = 16
 
     n_epochs = 41
     regularization = 0
@@ -101,7 +101,7 @@ class RNNModel(AttributionModel):
         dropout_placeholder: Dropout value placeholder (scalar), type tf.float32
 
         """
-        self.input_placeholder = tf.placeholder(tf.int32, [None, Config.max_length])
+        self.input_placeholder = tf.placeholder(tf.float32, [None, Config.max_length, Config.embed_size])
         self.labels_placeholder = tf.placeholder(tf.int32, [None, Config.n_classes])
         self.mask_placeholder = tf.placeholder(tf.float32, [None, Config.max_length])
         self.dropout_placeholder = tf.placeholder(tf.float32)
@@ -168,8 +168,8 @@ class RNNModel(AttributionModel):
             pred: tf.Tensor of shape (batch_size, max_length, n_classes)
         """
 
-        x = self.add_embedding()
-
+        #x = self.add_embedding()
+        x = self.input_placeholder
         if Config.cell_type=="lstm":
             print "lstm"
             cell_state = tf.zeros([tf.shape(x)[0], Config.hidden_size])
@@ -230,7 +230,7 @@ class RNNModel(AttributionModel):
 
             with tf.variable_scope("RNN"):
 
-                for time_step in range(Config.max_length):
+                for time_step in range(config.max_length):
                     if time_step >= 1:
                         tf.get_variable_scope().reuse_variables()
                     o, h = cell(x[:,time_step,:], h)
@@ -331,12 +331,12 @@ class RNNModel(AttributionModel):
         total = 0
         accuCount = 0
         for batch in batch_list:
-            batch_feat = np.array(batch[0], dtype = np.int32)
-            batch_mask = np.array(batch[1], dtype = np.float32)
+            batch_feat = np.array(batch[1], dtype = np.float32)
+            batch_mask = np.array(batch[2], dtype = np.float32)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
-            accuCount += np.sum(np.argmax(pred,1) == batch[2])
-            total += len(batch[2])
+            accuCount += np.sum(np.argmax(pred,1) == batch[0])
+            total += len(batch[0])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy %f" %(accu)) )
 
@@ -345,12 +345,12 @@ class RNNModel(AttributionModel):
         total = 0
         accuCount = 0
         for batch in batch_list:
-            batch_feat = np.array(batch[0], dtype = np.int32)
-            batch_mask = np.array(batch[1], dtype = np.float32)
+            batch_feat = np.array(batch[1], dtype = np.float32)
+            batch_mask = np.array(batch[2], dtype = np.float32)
 
             pred = self.predict_on_batch(session, batch_feat, batch_mask)
-            accuCount += np.sum(np.argmax(pred,1) == batch[2])
-            total += len(batch[2])
+            accuCount += np.sum(np.argmax(pred,1) == batch[0])
+            total += len(batch[0])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy on training set is: %f" %(accu)) )
 
@@ -363,7 +363,7 @@ class RNNModel(AttributionModel):
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/bbc/data_bundle.pkl', 'rb')
+        pkl_file = open('../data/batch_data/bbc/data_sentence.pkl', 'rb')
 
         batch_list = pickle.load(pkl_file)
         pkl_file.close()
@@ -394,10 +394,10 @@ class RNNModel(AttributionModel):
                 smallIter = 0
 
                 for batch in training_batch:
-                    batch_label = rmb.convertOnehotLabel(batch[2],  Config.n_classes)
-
-                    batch_feat = np.array(batch[0], dtype = np.int32)
-                    batch_mask = np.array(batch[1], dtype = np.float32)
+                    batch_label = rmb.convertOnehotLabel(batch[0],  Config.n_classes)
+                    batch_feat = np.array(batch[1], dtype = np.float32)
+                    batch_mask = np.array(batch[2], dtype = np.float32)
+                    print batch_mask
                     loss = self.train_on_batch(session, batch_feat, batch_label, batch_mask)
                     loss_list.append(loss)
                     smallIter += 1
