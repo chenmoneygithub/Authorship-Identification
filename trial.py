@@ -1,9 +1,12 @@
 #here
+import random
 import tensorflow as tf
 import utils.glove as glove
 #import utils.data_util as data_util
 import numpy as np
 import pickle
+import utils.confusion_matrix as cm
+import utils.data_util as du
 #from proj_rnn_cell import RNNCell
 
 
@@ -269,12 +272,23 @@ def trial4():
     print batch_list
     pkl_file.close()
 
+def trial5():
+    real = [s for s in xrange(50)] * 10
+    real.extend([random.randint(0, 49) for r in xrange(1000)])
+    pred = [p for p in xrange(50)] * 10
+    pred.extend([random.randint(0, 49) for r in xrange(1000)])
+
+    t_cm = cm.generate_cm(real, pred, 50)
+    x = t_cm.as_matrix().astype(np.uint8)
+    du.visualize_cm(x)
+
 
 
 
 def main():
     #trial1()
-    trial4()
+    # trial4()
+    trial5()
 
 if __name__=="__main__":
     main()

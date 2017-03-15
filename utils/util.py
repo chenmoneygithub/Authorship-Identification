@@ -206,6 +206,14 @@ class ConfusionMatrix(object):
         self.default_label = default_label if default_label is not None else len(labels) -1
         self.counts = defaultdict(Counter)
 
+    def as_matrix(self):
+        n_class = len(self.labels)
+        matrix = np.zeros((n_class, n_class))
+        for x in xrange(n_class):
+            for y in xrange(n_class):
+                matrix[x][y] = self.counts[x][y]
+        return matrix
+
     def update(self, gold, guess):
         """Update counts"""
         self.counts[gold][guess] += 1
