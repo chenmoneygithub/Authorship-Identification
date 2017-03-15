@@ -22,17 +22,17 @@ with open('../../data/glove/tokenToIndex', 'r') as f:
 
 
 cwd = os.getcwd()
-data_path = cwd + '/../dataset/bbc'
+data_path = cwd + '/../dataset/C50/C50test'
 #auth_sent_num = fdt.file2auth_sent_num(data_path)  # read in the training data
-auth_sentbundle_num = fdt.file2auth_sentbundle_num(data_path, 3)[1:1000]
+auth_sentbundle_num = fdt.file2auth_sentbundle_num(data_path, 3)
 ind = np.arange(len(auth_sentbundle_num))
 np.random.shuffle(ind)
 index = ind
 raw_data = [auth_sentbundle_num[i] for i in index ]
-batch_list = rmb.read_minibatch(raw_data, batch_size, max_length, False)
-#batch_list = rmba.read_minibatch(raw_data, batch_size, max_length, False)
+#batch_list = rmb.read_minibatch(raw_data, batch_size, max_length, False)
+batch_list = rmba.read_minibatch(raw_data, batch_size, max_length, False)
 
-output = open('../../data/batch_data/bbc/data_bundle_seq.pkl', 'wb')
+output = open('../../data/batch_data/C50/data_test_bundle_seq.pkl', 'wb')
 pickle.dump(batch_list, output, -1)
 output.close()
 
