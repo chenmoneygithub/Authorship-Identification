@@ -5,7 +5,8 @@ import utils.glove as glove
 import numpy as np
 import pickle
 #from proj_rnn_cell import RNNCell
-
+import math
+import sys
 
 #print wordVectors
 # let's say the sentence is "this is a file", labeled 1
@@ -269,7 +270,16 @@ def trial4():
     print batch_list
     pkl_file.close()
 
-
+# testing writing txt file
+def trial5():
+    f=open('results/writing_txt_trial.txt','a+')
+    for i in range(2):
+        f.write("Appended line %d\r\n" % (i+1))
+        f.write("writing the value of pi: {0:.5f}\n".format(math.pi))
+        f.write(sys.argv[0]+"\n")
+        f.write("\tadditional \t \tpadding{}\n".format(3))
+        f.write("\n")
+    f.close()
 
 
 def main():
