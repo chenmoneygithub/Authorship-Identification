@@ -1,5 +1,6 @@
 import os
 import re
+import random
 
 """
 input: data set directory
@@ -64,7 +65,7 @@ def extract_name(path):
             news_vec = read_myfile(news_dir)        # parse file to sentence list
             real_news_vec = []
             for vec in news_vec:
-                if len(vec) > 1:
+                if len(vec) >= 1:
                     real_news_vec.append(vec)
             news_vec_list.append(real_news_vec)
         portfolio[author] = news_vec_list
@@ -89,7 +90,7 @@ def extract_num(path):
             news_vec = read_myfile(news_dir)        # parse file to sentence list
             real_news_vec = []
             for vec in news_vec:
-                if len(vec) > 1:
+                if len(vec) >= 1:
                     real_news_vec.append(vec)
             news_vec_list.append(real_news_vec)
         portfolio[idx] = news_vec_list
@@ -225,9 +226,38 @@ def file2auth_sentbundle_num(path, sentence_num):
 def removeZeroLen(list_sent):
     res = []
     for i in range(len(list_sent)):
-        if len(list_sent[i][1]) > 1:
+        if len(list_sent[i][1]) >= 1:
             res.append(list_sent[i])
     return res
+
+
+"""
+input: data set directory
+output: pair of {author: [list of story paras]}
+"""
+def file2pair(input_path, n_class = 50, news_num = 50, self_ratio = 0.2, sample_num = 2000):
+    auth_para_list = file2auth_news_num(input_path)
+    total_para = n_class * news_num
+    pair_list = []
+    for ii in xrange(n_class):
+        # self, self
+        lo = ii * news_num
+        hi = (ii + 1) * news_num - 1
+        pair_elem = []
+        for jj in xrange(int(self_ratio * sample_num)):
+            idx1 = random.randint(lo, hi)
+            idx2 = random.randint(lo, hi)
+            pair_elem.append([auth_para_list[idx1], auth_para_list[idx2]])
+        # self, other
+        for kk in xrange(int((1 - self_ratio) * sample_num)):
+            idx3 = random.randint(lo, hi)
+            low = (0 + ii * news_num)
+            high = (total_para - news_num - 1 + ii * news_num)
+            idx4 = random.randint(low, high) % total_para
+            pair_elem.append([auth_para_list[idx3], auth_para_list[idx4]])
+        pair_list.extend(pair_elem)
+    return pair_list
+
 
 """
 following is used for test
@@ -242,35 +272,40 @@ if __name__=='__main__':
     '''
 
     cwd = os.getcwd()
-    test_path = cwd + '/../dataset/bbc'
+    test_path = cwd + '/../dataset/C50/C50train'
 
 
-    auth_sentbundle_num = file2auth_sentbundle_num(test_path, 3)
-    for x in auth_sentbundle_num:
-        print x
-        break
+    # auth_sentbundle_num = file2auth_sentbundle_num(test_path, 3)
+    # for x in auth_sentbundle_num:
+    #     print x
+    #     break
+    #
+    # auth_news_name = file2auth_news_name(test_path)
+    # for x in auth_news_name:
+    #     print x
+    #     break
+    #
+    # auth_sent_name = file2auth_sent_name(test_path)
+    # for x in auth_sent_name:
+    #     print x
+    #     break
+    #
+    # auth_news_num = file2auth_news_num(test_path)
+    # for x in auth_news_num:
+    #     print x
+    #     break
+    #
+    # auth_sent_num = file2auth_sent_num(test_path)
+    # for x in auth_sent_num:
+    #     print x
+    #     break
+    #
+    # name_idx = name2idx(test_path)
+    # for x in name_idx.items():
+    #     print x
+    #     break
 
-    auth_news_name = file2auth_news_name(test_path)
-    for x in auth_news_name:
-        print x
-        break
-
-    auth_sent_name = file2auth_sent_name(test_path)
-    for x in auth_sent_name:
-        print x
-        break
-
-    auth_news_num = file2auth_news_num(test_path)
-    for x in auth_news_num:
-        print x
-        break
-
-    auth_sent_num = file2auth_sent_num(test_path)
-    for x in auth_sent_num:
-        print x
-        break
-
-    name_idx = name2idx(test_path)
-    for x in name_idx.items():
+    pairs = file2pair(test_path)
+    for x in pairs:
         print x
         break

@@ -3,7 +3,7 @@ import re
 import random
 from unidecode import unidecode
 
-n_class = 50
+
 sent_len = 10       # each paragraph should contain at least 5 sentences
 para_len = 300      # each author should contain at least 300 paragraphs
 
@@ -89,7 +89,7 @@ def file2list(input_dir):
 input: data set directory
 output: pair of {author: [list of story paras]}
 """
-def file2pair(input_path, self_ratio = 0.2, sample_num = 2000):
+def file2pair(input_path, n_class = 50, para_len = 300, self_ratio = 0.2, sample_num = 2000):
     auth_para_list = file2list(input_path)
     total_para = n_class * para_len
     pair_list = []
