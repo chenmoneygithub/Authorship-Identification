@@ -42,7 +42,7 @@ class Config:
     window_size = 0
 
     word_num = 30
-    max_length = 30 # longest length of a sentence we will process
+    max_length = 15 # longest length of a sentence we will process
     n_classes = 50 # in total, we have 50 classes
     dropout = 0.9
 
@@ -325,6 +325,60 @@ class RNNModel(AttributionModel):
         return pred2
 
 
+        """
+        record the history of the model
+        this function will append the following content to the file (opened as f):
+
+        ###
+        training model:
+        starting time:
+
+        parameters：
+            cell_type:
+            embed_size:
+            hidden_size:
+            learning_rate:
+            regularization:
+            batch_size:
+
+        training history:
+        epoch       loss     train_accu      test_accu
+        0           1.2      0.6             0.4
+        ...
+
+        """
+    def record_history_init(self,f):
+        f.write("###\n")
+        f.write("training model: "+sys.argv[0]+"\n")
+        f.write("starting time: "+str(datetime.now())+"\n")
+        f.write("\n")
+        f.write("parameters:\n")
+        f.write("\tcell_type: "+Config.cell_type+"\n")
+        f.write("\tembed_size: {}\n".format(Config.embed_size))
+        f.write("\thidden_size: {}\n".format(Config.hidden_size))
+        f.write("\tlearning_rate: {0:.4f}\n".format(Config.lr))
+        f.write("\tregularization: {0:.5f}\n".format(Config.regularization))
+        f.write("\tbatch_size: {}\n".format(Config.batch_size))
+        f.write("\n")
+        f.write("training history:\n")
+        f.write("epoch \t\t loss \t\t train_accu \t\t test_accu\n")
+
+
+        """
+        write one line of training history
+        """
+    def record_history_accu(self,f,n_epoch,average_train_loss,train_accu,test_accu):
+        f.write("{0:d} \t\t {1:.5f} \t\t {2:.5f} \t\t {3:.5f}\n".format(n_epoch,average_train_loss,train_accu,test_accu))
+
+
+        """
+        add two empty lines and close the file
+        """
+    def record_history_finish(self,f):
+        f.write("\n")
+        f.write("\n")
+        f.close()
+
     def test_model(self, session, batch_list):
         print "Now, testing on the test set..."
         total = 0
@@ -339,6 +393,7 @@ class RNNModel(AttributionModel):
             total += len(batch[0])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy %f" %(accu)) )
+        return accu
 
     def test_trainset_model(self, session, batch_list):
         print "Now, testing on the trainig set, notice this is only for debugging..."
@@ -354,9 +409,12 @@ class RNNModel(AttributionModel):
             total += len(batch[0])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy on training set is: %f" %(accu)) )
+        return accu
 
     def train_model(self):
-
+        # modify txt name from here
+        training_history_txt_filename='results/training_history.txt'
+        
         if not os.path.exists(config.log_output):
             os.makedirs(os.path.dirname(config.log_output))
         handler = logging.FileHandler(config.log_output)
@@ -364,13 +422,17 @@ class RNNModel(AttributionModel):
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/C50/data_sentence_index.pkl', 'rb')
+        pkl_file = open('../data/batch_data/gutenberg/data_sentence_index.pkl', 'rb')
         batch_list = pickle.load(pkl_file)
         pkl_file.close()
 
+        # write training_history
+        training_history_file = open(training_history_txt_filename,'a+')
+        self.record_history_init(training_history_file)
+
         test_size = int(len(batch_list) / 10)
         training_batch = batch_list[0 : len(batch_list) - test_size]
-        print test_size
+        print test_size, len(batch_list)
         testing_train_batch = batch_list[test_size : 2 * test_size]
         testing_batch = batch_list[len(batch_list) - test_size : len(batch_list)]
 
@@ -402,7 +464,7 @@ class RNNModel(AttributionModel):
                     batch_feat = np.array(batch[1], dtype = np.int32)[:, :, 0, :]
                     batch_feat_mask = np.array(batch[1], dtype = np.float32)[:, :, 1, :]
                     batch_mask = np.array(batch[2], dtype = np.float32)
-                  #  print batch_mask
+                    #print batch_mask
                     loss = self.train_on_batch(session, batch_feat,batch_feat_mask, batch_label, batch_mask)
                     loss_list.append(loss)
                     smallIter += 1
@@ -413,8 +475,12 @@ class RNNModel(AttributionModel):
                         #self.test_model(session, testing_batch)
                         logger.info(("Intermediate epoch %d Total Iteration %d: loss : %f" %(iterTime, smallIter, np.mean(np.mean(np.array(loss)))) ))
 
-                self.test_trainset_model(session, testing_train_batch)
-                self.test_model(session, testing_batch)
+                # record training history on this epoch
+                train_accu=self.test_trainset_model(session, testing_train_batch)
+                test_accu=self.test_model(session, testing_batch)
+                average_train_loss=np.mean(np.array(loss_list))
+                self.record_history_accu(training_history_file,iterTime,average_train_loss,train_accu,test_accu)
+
                 if(iterTime % 10 == 0):
                     logger.info(("epoch %d : loss : %f" %(iterTime, np.mean(np.mean(np.array(loss)))) ))
                     saver.save(session, self.config.model_output + "_%d"%(iterTime))
@@ -423,6 +489,9 @@ class RNNModel(AttributionModel):
                     print ("Intermediate epoch %d : loss : %f" %(iterTime, np.mean(np.mean(np.array(loss)))) )
 
             print ("epoch %d : loss : %f" %(iterTime, np.mean(np.mean(np.array(loss)))) )
+
+        self.record_history_finish(training_history_file)
+
 
 
     def __init__(self, config, pretrained_embeddings, report=None):

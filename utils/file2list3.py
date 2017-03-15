@@ -81,11 +81,12 @@ def file2list(input_dir):
             print "WARNING: this author --", author, "does not meet the paragraph requirement"
     return auth_para_list
 
-cwd = os.getcwd()
-test_path = cwd + '/../dataset/gutenberg'
-res = file2list(test_path)
+if __name__=='__main__':
+    cwd = os.getcwd()
+    test_path = cwd + '/../dataset/gutenberg'
+    res = file2list(test_path)
 
-print len(res)
-for ii in xrange(len(res)):
-    if ii % 100 == 0:
-        print res[ii]
+    print len(res)
+    for ii in xrange(len(res)):
+        if ii % 100 == 0:
+            print res[ii]

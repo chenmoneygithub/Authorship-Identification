@@ -49,7 +49,7 @@ class Config:
     window_size = 0
 
     max_length = 70 # longest length of a sentence we will process
-    n_classes = 5 # in total, we have 50 classes
+    n_classes = 50 # in total, we have 50 classes
     dropout = 0.9
 
     embed_size = 50
@@ -189,8 +189,8 @@ class RNNModel(AttributionModel):
             h = tf.zeros([tf.shape(x)[0], Config.hidden_size])
 
             preds=[tf.matmul(o, self.U) + self.b2 for o in outputs]
-            preds=tf.pack(preds)
-            preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
+            self.raw_preds=tf.pack(preds)
+            preds=tf.reshape(self.raw_preds,[-1,Config.max_length,Config.n_classes])
             return preds
 
 
@@ -241,8 +241,8 @@ class RNNModel(AttributionModel):
 
             # Make sure to reshape @preds here.
 
-            preds=tf.pack(preds)
-            preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
+            self.raw_preds=tf.pack(preds)
+            preds=tf.reshape(tf.transpose(self.raw_preds, [1, 0, 2]),[-1,Config.max_length,Config.n_classes])
             return preds
 
 
@@ -364,7 +364,8 @@ class RNNModel(AttributionModel):
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/bbc/data_bundle_seq.pkl', 'rb')
+        '''
+        pkl_file = open('../data/batch_data/C50/data_bundle_seq.pkl', 'rb')
 
         batch_list = pickle.load(pkl_file)
         pkl_file.close()
@@ -374,15 +375,18 @@ class RNNModel(AttributionModel):
         print test_size
         testing_train_batch = batch_list[test_size : 2 * test_size]
         testing_batch = batch_list[len(batch_list) - test_size : len(batch_list)]
+        '''
+
+        train_file = open('../data/batch_data/C50/data_train_bundle_seq.pkl', 'rb')
+        training_batch = pickle.load(train_file)
+        train_file.close()
 
 
-        '''
-        cwd = os.getcwd()
-        data_path = cwd + '/dataset/C50/C50train'
-        auth_sent_num = fdt.file2auth_sent_num(data_path)  # read in the training data
-        auth_sent_num = auth_sent_num[0 : 1000]
-        batch_list = rmb.read_minibatch(auth_sent_num, Config.batch_size, Config.max_length)
-        '''
+        test_file = open('../data/batch_data/C50/data_test_bundle_seq.pkl', 'rb')
+        testing_batch = pickle.load(test_file)
+        test_file.close()
+
+        testing_train_batch = training_batch[0 : int(len(training_batch) / 2)]
 
         init = tf.global_variables_initializer()
         saver = tf.train.Saver()
@@ -390,6 +394,17 @@ class RNNModel(AttributionModel):
             session.run(init)
             #load_path = "results/RNN/20170310_1022/model.weights_20"
             #saver.restore(session, load_path)
+
+            #the following is a test for what in tensor
+            batch = training_batch[0]
+            batch_label = rmb.convertOnehotLabel(batch[2],  Config.n_classes)
+            batch_feat = np.array(batch[0], dtype = np.int32)
+            batch_mask = np.array(batch[1], dtype = np.float32)
+            feed = self.create_feed_dict(batch_feat, labels_batch=batch_label, mask_batch=batch_mask,
+                                     dropout=Config.dropout)
+            _, loss, raw_pred, pred = session.run([self.train_op, self.loss, self.raw_preds, self.pred], feed_dict=feed)
+            ##############
+
             for iterTime in range(Config.n_epochs):
                 loss_list = []
                 smallIter = 0
@@ -429,7 +444,7 @@ class RNNModel(AttributionModel):
         self.labels_placeholder = None
         self.mask_placeholder = None
         self.dropout_placeholder = None
-
+        self.raw_preds = None
         self.build()
 
 

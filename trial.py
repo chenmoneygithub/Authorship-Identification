@@ -8,7 +8,8 @@ import pickle
 import utils.confusion_matrix as cm
 import utils.data_util as du
 #from proj_rnn_cell import RNNCell
-
+import math
+import sys
 
 #print wordVectors
 # let's say the sentence is "this is a file", labeled 1
@@ -283,6 +284,16 @@ def trial5():
     du.visualize_cm(x)
 
 
+# testing writing txt file
+def trial5():
+    f=open('results/writing_txt_trial.txt','a+')
+    for i in range(2):
+        f.write("Appended line %d\r\n" % (i+1))
+        f.write("writing the value of pi: {0:.5f}\n".format(math.pi))
+        f.write(sys.argv[0]+"\n")
+        f.write("\tadditional \t \tpadding{}\n".format(3))
+        f.write("\n")
+    f.close()
 
 
 def main():
