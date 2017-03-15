@@ -88,6 +88,7 @@ def process_word2num(auth_news_list, word_dict, glove, max_length):
     for news_ind in range(len(auth_news_list)):
         cur_list = []
         mask_list = []
+        total_sent = 0
         for sent_ind in range(max_length):
             sent_temp = np.zeros(50, )
             total = 0
@@ -102,13 +103,56 @@ def process_word2num(auth_news_list, word_dict, glove, max_length):
                 else:
                     sent_temp /= total
                     cur_list.append(sent_temp)
-                mask_list.append(True)
+                mask_list.append(1)
+                total_sent += 1
             else:
                 cur_list.append(pad_zero)
-                mask_list.append(False)
+                mask_list.append(0)
+        mask_list = ( np.array(mask_list) * 1.0 / total_sent ).tolist()
         res.append([ auth_news_list[news_ind][0], cur_list, mask_list ])
 
     return res
+
+
+def process_word2num_noglove(auth_news_list, word_dict, max_sent_num, max_sent_length):
+    res = []
+    pad_ind = word_dict["cqian23th7zhangrao"] # for unseen word
+    for news_ind in range(len(auth_news_list)):
+        sent_list = []
+        sent_mask_list = []
+        total_sent = 0
+        for sent_ind in range(max_sent_num):
+            word_list = []
+            word_mask_list = []
+            total_word = 0
+            if sent_ind < len(auth_news_list[news_ind][1]):
+                for word_ind in range(max_sent_length):
+                    # the word not included in glove will not be considered!!
+                    # Important! this part needs to be examined
+                    if word_ind >= len(auth_news_list[news_ind][1][sent_ind]):
+                        word_list.append(pad_ind)
+                        word_mask_list.append(0)
+                    else:
+                        if word_dict.has_key(str.lower(auth_news_list[news_ind][1][sent_ind][word_ind])):
+                            word_list.append(word_dict[str.lower(auth_news_list[news_ind][1][sent_ind][word_ind])])
+                            word_mask_list.append(1)
+                            total_word += 1
+                        else:
+                            word_list.append(pad_ind)
+                            word_mask_list.append(0)
+                if total_word != 0:
+                    word_mask_list = (np.array(word_mask_list) * 1.0 / total_word).tolist()
+                sent_mask_list.append(1)
+                total_sent += 1
+            else:
+                word_list = (np.zeros([max_sent_length, ]) + pad_ind).tolist()
+                word_mask_list = np.zeros([max_sent_length, ]).tolist()
+                sent_mask_list.append(0)
+            sent_list.append([word_list, word_mask_list])
+        sent_mask_list = (np.array(sent_mask_list) * 1.0 / total_sent).tolist()
+        res.append([auth_news_list[news_ind][0], sent_list, sent_mask_list])
+    return res
+
 
 def pack_batch_list(batch_list, batch_size):
     '''
@@ -126,7 +170,7 @@ def pack_batch_list(batch_list, batch_size):
         label_batch = []
         feat_batch = []
         mask_batch = []
-        for i in range(min(len(batch_list), start + batch_size)):
+        for i in range(start, min(len(batch_list), start + batch_size)):
             label_batch.append(batch_list[i][0])
             feat_batch.append(batch_list[i][1])
             mask_batch.append(batch_list[i][2])

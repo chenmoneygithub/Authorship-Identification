@@ -41,7 +41,8 @@ class Config:
 
     window_size = 0
 
-    max_length = 24 # longest length of a sentence we will process
+    word_num = 30
+    max_length = 30 # longest length of a sentence we will process
     n_classes = 50 # in total, we have 50 classes
     dropout = 0.9
 
@@ -94,12 +95,13 @@ class RNNModel(AttributionModel):
         dropout_placeholder: Dropout value placeholder (scalar), type tf.float32
 
         """
-        self.input_placeholder = tf.placeholder(tf.float32, [None, Config.max_length, Config.embed_size])
+        self.input_placeholder = tf.placeholder(tf.int32, [None, Config.max_length, Config.word_num])
+        self.batch_mask_placeholder = tf.placeholder(tf.float32, [None, Config.max_length, Config.word_num])
         self.labels_placeholder = tf.placeholder(tf.int32, [None, Config.n_classes])
         self.mask_placeholder = tf.placeholder(tf.float32, [None, Config.max_length])
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
-    def create_feed_dict(self, inputs_batch, mask_batch, labels_batch=None, dropout=1):
+    def create_feed_dict(self, inputs_batch, batch_feat_mask, mask_batch, labels_batch=None, dropout=1):
         """Creates the feed_dict for the dependency parser.
 
         A feed_dict takes the form of:
@@ -120,6 +122,7 @@ class RNNModel(AttributionModel):
         """
 
         feed_dict = {}
+        feed_dict[self.batch_mask_placeholder] = batch_feat_mask
         if labels_batch != None:
             feed_dict[self.labels_placeholder] = labels_batch
         if inputs_batch != None:
@@ -139,9 +142,13 @@ class RNNModel(AttributionModel):
             embeddings: tf.Tensor of shape (None, n_features*embed_size)
         """
 
-        embeddingTensor = tf.Variable(self.pretrained_embeddings,tf.float32)
-        embeddings = tf.nn.embedding_lookup(embeddingTensor, self.input_placeholder)
-
+        embeddingTensor = tf.Variable(self.pretrained_embeddings, tf.float32)
+        embeddingsTemp = tf.nn.embedding_lookup(embeddingTensor, self.input_placeholder)
+        mask_batch = tf.reshape(self.batch_mask_placeholder, [-1, config.max_length, config.word_num, 1])
+        mask_batch = tf.tile(mask_batch, [1, 1, 1, config.embed_size])
+        embeddings = tf.multiply(embeddingsTemp, mask_batch)
+        #embeddings = tf.reshape(embeddings, [-1, config.max_length, config.word_num, config.embed_size])
+        embeddings = tf.reduce_sum(embeddings, axis = 2)
         return embeddings
 
     def add_prediction_op(self):
@@ -161,8 +168,8 @@ class RNNModel(AttributionModel):
             pred: tf.Tensor of shape (batch_size, max_length, n_classes)
         """
 
-        #x = self.add_embedding()
-        x = self.input_placeholder
+        x = self.add_embedding()
+        #x = self.input_placeholder
         if Config.cell_type=="lstm":
             print "lstm"
             cell_state = tf.zeros([tf.shape(x)[0], Config.hidden_size])
@@ -190,7 +197,7 @@ class RNNModel(AttributionModel):
         else:
             dropout_rate = self.dropout_placeholder
 
-            preds = [] # Predicted output at each timestep should go here!
+            self.raw_preds = [] # Predicted output at each timestep should go here!
 
 
             # Use the cell defined below. For Q2, we will just be using the
@@ -221,13 +228,13 @@ class RNNModel(AttributionModel):
                     o, h = cell(x[:,time_step,:], h)
 
                     o_drop = tf.nn.dropout(o, dropout_rate)
-                    preds.append(tf.matmul(o_drop, self.U) + self.b2)
+                    self.raw_preds.append(tf.matmul(o_drop, self.U) + self.b2)
 
 
             # Make sure to reshape @preds here.
 
-            preds=tf.pack(preds)
-            preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
+            preds=tf.pack(self.raw_preds)
+            preds=tf.reshape(tf.transpose(preds, [1, 0, 2]),[-1,Config.max_length,Config.n_classes])
             return preds
 
 
@@ -292,15 +299,15 @@ class RNNModel(AttributionModel):
         return train_op
 
 
-    def train_on_batch(self, sess, inputs_batch, labels_batch, mask_batch):
+    def train_on_batch(self, sess, inputs_batch, batch_feat_mask, labels_batch, mask_batch):
 
-        feed = self.create_feed_dict(inputs_batch, labels_batch=labels_batch, mask_batch=mask_batch,
+        feed = self.create_feed_dict(inputs_batch, batch_feat_mask, labels_batch=labels_batch, mask_batch=mask_batch,
                                      dropout=Config.dropout)
         _, loss, pred, pred_mask = sess.run([self.train_op, self.loss, self.pred, self.pred_mask], feed_dict=feed)
 
         return loss
 
-    def predict_on_batch(self, sess, inputs_batch, mask_batch):
+    def predict_on_batch(self, sess, inputs_batch, batch_feat_mask, mask_batch):
         """Make predictions for the provided batch of data
 
         Args:
@@ -311,7 +318,7 @@ class RNNModel(AttributionModel):
             predictions: np.ndarray of shape (n_samples, n_classes)
             (after softmax)
         """
-        feed = self.create_feed_dict(inputs_batch,mask_batch)
+        feed = self.create_feed_dict(inputs_batch, batch_feat_mask, mask_batch)
         predictions = sess.run(tf.nn.softmax(self.pred), feed_dict=feed)
         mask2=np.stack([mask_batch for i in range(Config.n_classes)] ,2)
         pred2=np.sum(np.multiply(predictions,mask2),1)
@@ -323,10 +330,11 @@ class RNNModel(AttributionModel):
         total = 0
         accuCount = 0
         for batch in batch_list:
-            batch_feat = np.array(batch[1], dtype = np.float32)
+            batch_feat = np.array(batch[1], dtype = np.int32)[:, :, 0, :]
+            batch_feat_mask = np.array(batch[1], dtype = np.float32)[:, :, 1, :]
             batch_mask = np.array(batch[2], dtype = np.float32)
 
-            pred = self.predict_on_batch(session, batch_feat, batch_mask)
+            pred = self.predict_on_batch(session, batch_feat, batch_feat_mask, batch_mask)
             accuCount += np.sum(np.argmax(pred,1) == batch[0])
             total += len(batch[0])
         accu = accuCount * 1.0 / total
@@ -337,10 +345,11 @@ class RNNModel(AttributionModel):
         total = 0
         accuCount = 0
         for batch in batch_list:
-            batch_feat = np.array(batch[1], dtype = np.float32)
+            batch_feat = np.array(batch[1], dtype = np.int32)[:, :, 0, :]
+            batch_feat_mask = np.array(batch[1], dtype = np.float32)[:, :, 1, :]
             batch_mask = np.array(batch[2], dtype = np.float32)
 
-            pred = self.predict_on_batch(session, batch_feat, batch_mask)
+            pred = self.predict_on_batch(session, batch_feat, batch_feat_mask, batch_mask)
             accuCount += np.sum(np.argmax(pred,1) == batch[0])
             total += len(batch[0])
         accu = accuCount * 1.0 / total
@@ -355,8 +364,7 @@ class RNNModel(AttributionModel):
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/bbc/data_sentence.pkl', 'rb')
-
+        pkl_file = open('../data/batch_data/C50/data_sentence_index.pkl', 'rb')
         batch_list = pickle.load(pkl_file)
         pkl_file.close()
 
@@ -366,31 +374,36 @@ class RNNModel(AttributionModel):
         testing_train_batch = batch_list[test_size : 2 * test_size]
         testing_batch = batch_list[len(batch_list) - test_size : len(batch_list)]
 
-
-        '''
-        cwd = os.getcwd()
-        data_path = cwd + '/dataset/C50/C50train'
-        auth_sent_num = fdt.file2auth_sent_num(data_path)  # read in the training data
-        auth_sent_num = auth_sent_num[0 : 1000]
-        batch_list = rmb.read_minibatch(auth_sent_num, Config.batch_size, Config.max_length)
-        '''
-
         init = tf.global_variables_initializer()
         saver = tf.train.Saver()
         with tf.Session() as session:
             session.run(init)
             #load_path = "results/RNN/20170310_1022/model.weights_20"
             #saver.restore(session, load_path)
+
+            #the following is a test for what in tensor
+            batch = training_batch[0]
+            batch_label = rmb.convertOnehotLabel(batch[0],  Config.n_classes)
+            batch_feat = np.array(batch[1], dtype = np.int32)[:, :, 0, :]
+            batch_feat_mask = np.array(batch[1], dtype = np.float32)[:, :, 1, :]
+            batch_mask = np.array(batch[2], dtype = np.float32)
+            feed = self.create_feed_dict(batch_feat, batch_feat_mask, labels_batch=batch_label, mask_batch=batch_mask,
+                                     dropout=Config.dropout)
+            _, loss, raw_pred, pred = session.run([self.train_op, self.loss, self.raw_preds, self.pred], feed_dict=feed)
+            ##############
+
+
             for iterTime in range(Config.n_epochs):
                 loss_list = []
                 smallIter = 0
 
                 for batch in training_batch:
                     batch_label = rmb.convertOnehotLabel(batch[0],  Config.n_classes)
-                    batch_feat = np.array(batch[1], dtype = np.float32)
+                    batch_feat = np.array(batch[1], dtype = np.int32)[:, :, 0, :]
+                    batch_feat_mask = np.array(batch[1], dtype = np.float32)[:, :, 1, :]
                     batch_mask = np.array(batch[2], dtype = np.float32)
                   #  print batch_mask
-                    loss = self.train_on_batch(session, batch_feat, batch_label, batch_mask)
+                    loss = self.train_on_batch(session, batch_feat,batch_feat_mask, batch_label, batch_mask)
                     loss_list.append(loss)
                     smallIter += 1
 
@@ -419,6 +432,7 @@ class RNNModel(AttributionModel):
 
         self.input_placeholder = None
         self.labels_placeholder = None
+        self.batch_mask_placeholder = None
         self.mask_placeholder = None
         self.dropout_placeholder = None
 
