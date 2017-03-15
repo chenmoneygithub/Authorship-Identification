@@ -282,10 +282,11 @@ def trial5():
     t_cm = cm.generate_cm(real, pred, 50)
     x = t_cm.as_matrix().astype(np.uint8)
     du.visualize_cm(x)
+    print "done"
 
 
 # testing writing txt file
-def trial5():
+def trial6():
     f=open('results/writing_txt_trial.txt','a+')
     for i in range(2):
         f.write("Appended line %d\r\n" % (i+1))

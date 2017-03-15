@@ -1,3 +1,5 @@
+import os
+import errno
 import glove
 import numpy as np
 import matplotlib.pyplot as plt
@@ -78,11 +80,17 @@ this function takes a confusion matrix and display it
 """
 def visualize_cm(cm):
     l=np.shape(cm)[0]
-    plt.imshow(cm, interpolation='nearest',cmap='hot')
+    fig = plt.imshow(cm, interpolation='nearest',cmap='hot')
     plt.xticks(np.arange(0,l),range(l))
     plt.yticks(np.arange(0,l),range(l))
     plt.colorbar()
-    plt.show()
+    dirname = "./results/fig/"
+    print dirname
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    # plt.show()
+    plt.savefig("./results/fig/confusion_matrix.png")
+
 
 
 
