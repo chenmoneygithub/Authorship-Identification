@@ -1,0 +1,17 @@
+###
+training model: /Users/ThomasChen/Documents/study_in_Stanford/CS224N/project/Authorship-Identification/RNN_sent_model_embed.py
+starting time: 2017-03-14 22:01:03.529930
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 1.57767 		 0.54167 		 0.35897
+
+

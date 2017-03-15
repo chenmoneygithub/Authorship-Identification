@@ -83,34 +83,28 @@ class RNNModel(AttributionModel):
     def add_placeholders(self):
         """Generates placeholder variables to represent the input tensors
 
-        These placeholders are used as inputs by the rest of the model building and will be fed
-        data during training.  Note that when "None" is in a placeholder's shape, it's flexible
-        (so we can use different batch sizes without rebuilding the model).
-
-        Adds following nodes to the computational graph
-
         input_placeholder: Input placeholder tensor of  shape (None, self.max_length, n_features), type tf.int32
         labels_placeholder: Labels placeholder tensor of shape (None, self.max_length), type tf.int32
         mask_placeholder:  Mask placeholder tensor of shape (None, self.max_length), type tf.bool
         dropout_placeholder: Dropout value placeholder (scalar), type tf.float32
 
         """
-        self.input_placeholder = tf.placeholder(tf.int32, [None, Config.max_length, Config.word_num])
-        self.batch_mask_placeholder = tf.placeholder(tf.float32, [None, Config.max_length, Config.word_num])
-        self.labels_placeholder = tf.placeholder(tf.int32, [None, Config.n_classes])
-        self.mask_placeholder = tf.placeholder(tf.float32, [None, Config.max_length])
+        self.input_placeholder1 = tf.placeholder(tf.int32, [None, Config.max_length, Config.word_num])
+        self.batch_mask_placeholder1 = tf.placeholder(tf.float32, [None, Config.max_length, Config.word_num])
+        self.labels_placeholder1 = tf.placeholder(tf.int32, [None, Config.n_classes])
+        self.mask_placeholder1 = tf.placeholder(tf.float32, [None, Config.max_length])
+
+        self.input_placeholder2 = tf.placeholder(tf.int32, [None, Config.max_length, Config.word_num])
+        self.batch_mask_placeholder2 = tf.placeholder(tf.float32, [None, Config.max_length, Config.word_num])
+        self.labels_placeholder2 = tf.placeholder(tf.int32, [None, Config.n_classes])
+        self.mask_placeholder2 = tf.placeholder(tf.float32, [None, Config.max_length])
+
         self.dropout_placeholder = tf.placeholder(tf.float32)
 
-    def create_feed_dict(self, inputs_batch, batch_feat_mask, mask_batch, labels_batch=None, dropout=1):
+    def create_feed_dict(self, inputs_batch1, batch_feat_mask1, mask_batch1,
+                        inputs_batch2, batch_feat_mask2, mask_batch2,
+                         labels_batch1=None, labels_batch2=None, dropout=1):
         """Creates the feed_dict for the dependency parser.
-
-        A feed_dict takes the form of:
-
-        feed_dict = {
-                <placeholder>: <tensor of values to be passed for placeholder>,
-                ....
-        }
-
 
         Args:
             inputs_batch: A batch of input data.
@@ -122,16 +116,23 @@ class RNNModel(AttributionModel):
         """
 
         feed_dict = {}
-        feed_dict[self.batch_mask_placeholder] = batch_feat_mask
-        if labels_batch != None:
-            feed_dict[self.labels_placeholder] = labels_batch
-        if inputs_batch != None:
-            feed_dict[self.input_placeholder] = inputs_batch
-        if dropout != None:
-            feed_dict[self.dropout_placeholder] = dropout
-        if mask_batch != None:
-            feed_dict[self.mask_placeholder] = mask_batch
+        feed_dict[self.batch_mask_placeholder1] = batch_feat_mask1
+        if labels_batch1 != None:
+            feed_dict[self.labels_placeholder1] = labels_batch1
+        if inputs_batch1 != None:
+            feed_dict[self.input_placeholder1] = inputs_batch1
+        if mask_batch1 != None:
+            feed_dict[self.mask_placeholder1] = mask_batch1
 
+        feed_dict[self.batch_mask_placeholder2] = batch_feat_mask2
+        if labels_batch1 != None:
+            feed_dict[self.labels_placeholder2] = labels_batch2
+        if inputs_batch1 != None:
+            feed_dict[self.input_placeholder2] = inputs_batch2
+        if mask_batch1 != None:
+            feed_dict[self.mask_placeholder2] = mask_batch2
+
+        feed_dict[self.dropout_placeholder] = dropout
         return feed_dict
 
     def add_embedding(self):
@@ -143,13 +144,22 @@ class RNNModel(AttributionModel):
         """
 
         embeddingTensor = tf.Variable(self.pretrained_embeddings, tf.float32)
-        embeddingsTemp = tf.nn.embedding_lookup(embeddingTensor, self.input_placeholder)
-        mask_batch = tf.reshape(self.batch_mask_placeholder, [-1, config.max_length, config.word_num, 1])
-        mask_batch = tf.tile(mask_batch, [1, 1, 1, config.embed_size])
-        embeddings = tf.multiply(embeddingsTemp, mask_batch)
-        #embeddings = tf.reshape(embeddings, [-1, config.max_length, config.word_num, config.embed_size])
-        embeddings = tf.reduce_sum(embeddings, axis = 2)
-        return embeddings
+
+        # For input 1
+        embeddingsTemp1 = tf.nn.embedding_lookup(embeddingTensor, self.input_placeholder1)
+        mask_batch1 = tf.reshape(self.batch_mask_placeholder1, [-1, config.max_length, config.word_num, 1])
+        mask_batch1 = tf.tile(mask_batch1, [1, 1, 1, config.embed_size])
+        embeddings1 = tf.multiply(embeddingsTemp1, mask_batch1)
+        embeddings1 = tf.reduce_sum(embeddings1, axis = 2)
+
+        # For input 2
+        embeddingsTemp2 = tf.nn.embedding_lookup(embeddingTensor, self.input_placeholder2)
+        mask_batch2 = tf.reshape(self.batch_mask_placeholder2, [-1, config.max_length, config.word_num, 1])
+        mask_batch2 = tf.tile(mask_batch2, [1, 1, 1, config.embed_size])
+        embeddings2 = tf.multiply(embeddingsTemp2, mask_batch2)
+        embeddings2 = tf.reduce_sum(embeddings2, axis = 2)
+
+        return embeddings1, embeddings2
 
     def add_prediction_op(self):
         """Adds the unrolled RNN:
@@ -168,77 +178,64 @@ class RNNModel(AttributionModel):
             pred: tf.Tensor of shape (batch_size, max_length, n_classes)
         """
 
-        x = self.add_embedding()
+        x1, x2 = self.add_embedding()
         #x = self.input_placeholder
-        if Config.cell_type=="lstm":
-            print "lstm"
-            cell_state = tf.zeros([tf.shape(x)[0], Config.hidden_size])
-            hidden_state = tf.zeros([tf.shape(x)[0], Config.hidden_size])
-            init_state = tf.nn.rnn_cell.LSTMStateTuple(cell_state, hidden_state)
-            cell = tf.nn.rnn_cell.BasicLSTMCell(Config.hidden_size, state_is_tuple=True)
-            inputs_series=tf.split(1,Config.max_length,x)
-            outputs, current_state = tf.nn.rnn(cell, inputs_series, init_state)
+
+        dropout_rate = self.dropout_placeholder
+
+        self.raw_preds = [] # Predicted output at each timestep should go here!
 
 
-            self.U = tf.get_variable('U',
-                                  [Config.hidden_size, Config.n_classes],
-                                  initializer = tf.contrib.layers.xavier_initializer())
-            self.b2 = tf.get_variable('b2',
-                                  [Config.n_classes, ],
-                                  initializer = tf.contrib.layers.xavier_initializer())
-            h = tf.zeros([tf.shape(x)[0], Config.hidden_size])
-
-            preds=[tf.matmul(o, self.U) + self.b2 for o in outputs]
-            preds=tf.pack(preds)
-            preds=tf.reshape(preds,[-1,Config.max_length,Config.n_classes])
-            return preds
-
-
+        # Use the cell defined below. For Q2, we will just be using the
+        # RNNCell you defined, but for Q3, we will run this code again
+        # with a GRU cell!
+        if Config.cell_type=="rnn":
+            cell = RNNCell(Config.embed_size, Config.hidden_size)
+        elif Config.cell_type=="gru":
+            cell = GRUCell(Config.embed_size, Config.hidden_size)
         else:
-            dropout_rate = self.dropout_placeholder
+            assert False, "Cell type undefined"
+        # Define U and b2 as variables.
+        # Initialize state as vector of zeros.
 
-            self.raw_preds = [] # Predicted output at each timestep should go here!
+        self.U = tf.get_variable('U',
+                              [Config.hidden_size, Config.n_classes],
+                              initializer = tf.contrib.layers.xavier_initializer())
+        self.b2 = tf.get_variable('b2',
+                              [Config.n_classes, ],
+                              initializer = tf.contrib.layers.xavier_initializer())
+        h = tf.zeros([tf.shape(x1)[0], Config.hidden_size])
 
+        with tf.variable_scope("RNN"):
+            # For input 1
+            for time_step in range(config.max_length):
+                if time_step >= 1:
+                    tf.get_variable_scope().reuse_variables()
+                o, h = cell(x1[:,time_step,:], h)
 
-            # Use the cell defined below. For Q2, we will just be using the
-            # RNNCell you defined, but for Q3, we will run this code again
-            # with a GRU cell!
-            if Config.cell_type=="rnn":
-                cell = RNNCell(Config.embed_size, Config.hidden_size)
-            elif Config.cell_type=="gru":
-                cell = GRUCell(Config.embed_size, Config.hidden_size)
-            else:
-                assert False, "Cell type undefined"
-            # Define U and b2 as variables.
-            # Initialize state as vector of zeros.
+                o_drop1 = tf.nn.dropout(o, dropout_rate)
+                self.raw_preds1.append(tf.matmul(o_drop1, self.U) + self.b2)
 
-            self.U = tf.get_variable('U',
-                                  [Config.hidden_size, Config.n_classes],
-                                  initializer = tf.contrib.layers.xavier_initializer())
-            self.b2 = tf.get_variable('b2',
-                                  [Config.n_classes, ],
-                                  initializer = tf.contrib.layers.xavier_initializer())
-            h = tf.zeros([tf.shape(x)[0], Config.hidden_size])
+            for time_step in range(config.max_length):
+                if time_step >= 1:
+                    tf.get_variable_scope().reuse_variables()
+                o, h = cell(x2[:,time_step,:], h)
 
-            with tf.variable_scope("RNN"):
+                o_drop2 = tf.nn.dropout(o, dropout_rate)
+                self.raw_preds2.append(tf.matmul(o_drop2, self.U) + self.b2)
 
-                for time_step in range(config.max_length):
-                    if time_step >= 1:
-                        tf.get_variable_scope().reuse_variables()
-                    o, h = cell(x[:,time_step,:], h)
+        # Make sure to reshape @preds here.
 
-                    o_drop = tf.nn.dropout(o, dropout_rate)
-                    self.raw_preds.append(tf.matmul(o_drop, self.U) + self.b2)
+        preds1=tf.pack(self.raw_preds1)
+        preds1=tf.reshape(tf.transpose(preds1, [1, 0, 2]),[-1,Config.max_length,Config.n_classes])
 
+        preds2=tf.pack(self.raw_preds2)
+        preds2=tf.reshape(tf.transpose(preds2, [1, 0, 2]),[-1,Config.max_length,Config.n_classes])
 
-            # Make sure to reshape @preds here.
-
-            preds=tf.pack(self.raw_preds)
-            preds=tf.reshape(tf.transpose(preds, [1, 0, 2]),[-1,Config.max_length,Config.n_classes])
-            return preds
+        return preds1, preds2
 
 
-    def add_loss_op(self, preds):
+    def add_loss_op(self, preds1, preds2):
         """Adds Ops for the loss function to the computational graph.
 
         Args:
@@ -249,19 +246,23 @@ class RNNModel(AttributionModel):
         """
 
 
-        self.pred_mask=tf.reshape(self.mask_placeholder,[-1,Config.max_length,1])
-        self.pred_mask=tf.tile(self.pred_mask,[1,1,Config.n_classes])
+        self.pred_mask1=tf.reshape(self.mask_placeholder1,[-1,Config.max_length,1])
+        self.pred_mask1=tf.tile(self.pred_mask1,[1,1,Config.n_classes])
 
-        self.pred_masked=tf.multiply(preds,self.pred_mask)
-        self.pred_masked=tf.reduce_sum(self.pred_masked,axis=1)
+        self.pred_masked1=tf.multiply(preds1,self.pred_mask1)
+        self.pred_masked1=tf.reduce_sum(self.pred_masked1,axis=1)
 
-        #self.pred_label = tf.reshape(self.labels_placeholder, [-1, 1, config.n_classes])
-        #self.pred_label = tf.tile(self.pred_label, [1, config.max_length, 1])
+        self.pred_mask2=tf.reshape(self.mask_placeholder2,[-1,Config.max_length,1])
+        self.pred_mask2=tf.tile(self.pred_mask2,[1,1,Config.n_classes])
+
+        self.pred_masked2=tf.multiply(preds2,self.pred_mask2)
+        self.pred_masked2=tf.reduce_sum(self.pred_masked2,axis=1)
 
 
-        loss = tf.nn.softmax_cross_entropy_with_logits(self.pred_masked, self.labels_placeholder)
+        loss1 = tf.nn.softmax_cross_entropy_with_logits(self.pred_masked1, self.labels_placeholder1)
+        loss2 = tf.nn.softmax_cross_entropy_with_logits(self.pred_masked2, self.labels_placeholder2)
 
-        loss = tf.reduce_mean(loss) + config.regularization * ( tf.nn.l2_loss(self.U) )
+        loss = tf.reduce_mean(loss1) + tf.reduce_mean(loss2) + config.regularization * ( tf.nn.l2_loss(self.U) )
 
         with tf.variable_scope("RNN/cell", reuse= True):
             # add regularization
@@ -414,7 +415,7 @@ class RNNModel(AttributionModel):
     def train_model(self):
         # modify txt name from here
         training_history_txt_filename='results/training_history.txt'
-        
+
         if not os.path.exists(config.log_output):
             os.makedirs(os.path.dirname(config.log_output))
         handler = logging.FileHandler(config.log_output)
