@@ -12,7 +12,7 @@ from data_util import load_embeddings
 
 batch_size = 16
 max_sent_num = 15
-max_sent_length = 30
+max_sent_length = 15
 
 cwd = os.getcwd()
 data_path = cwd + '/../dataset/bbc'

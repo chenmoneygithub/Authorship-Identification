@@ -3,7 +3,7 @@
 
 import file2dict as fdt
 import read_minibatch as rmb
-import read_minibatch_avemask as rmba
+import file2list3 as fdt3
 import os
 import pickle
 import numpy as np
@@ -15,7 +15,7 @@ max_sent_num = 15
 max_sent_length = 30
 
 cwd = os.getcwd()
-data_path = cwd + '/../dataset/bbc'
+data_path = cwd + '/../dataset/gutenberg'
 
 with open('../../data/glove/tokenToIndex', 'r') as f:
     try:
@@ -28,7 +28,7 @@ with open('../../data/glove/tokenToIndex', 'r') as f:
 #auth_sent_num = fdt.file2auth_sent_num(data_path)  # read in the training data
 #auth_sentbundle_num = fdt.file2auth_sentbundle_num(data_path, 3)[1:1000]
 
-auth_news_num = fdt.file2auth_news_num(data_path)
+auth_news_num = fdt3.file2list(data_path)
 
 ind = np.arange(len(auth_news_num))
 np.random.shuffle(ind)
@@ -39,7 +39,7 @@ batch_list = rmb.process_word2num_noglove(raw_data, wordToIndex, max_sent_num, m
 
 batch_list_bundle = rmb.pack_batch_list(batch_list, batch_size)
 
-output = open('../../data/batch_data/bbc/data_sentence_index.pkl', 'wb')
+output = open('../../data/batch_data/gutenberg/data_sentence_index.pkl', 'wb')
 pickle.dump(batch_list_bundle, output, -1)
 output.close()
 

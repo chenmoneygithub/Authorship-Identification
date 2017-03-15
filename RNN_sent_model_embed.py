@@ -42,7 +42,7 @@ class Config:
     window_size = 0
 
     word_num = 30
-    max_length = 30 # longest length of a sentence we will process
+    max_length = 15 # longest length of a sentence we will process
     n_classes = 50 # in total, we have 50 classes
     dropout = 0.9
 
@@ -364,13 +364,13 @@ class RNNModel(AttributionModel):
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/C50/data_sentence_index.pkl', 'rb')
+        pkl_file = open('../data/batch_data/gutenberg/data_sentence_index.pkl', 'rb')
         batch_list = pickle.load(pkl_file)
         pkl_file.close()
 
         test_size = int(len(batch_list) / 10)
         training_batch = batch_list[0 : len(batch_list) - test_size]
-        print test_size
+        print test_size, len(batch_list)
         testing_train_batch = batch_list[test_size : 2 * test_size]
         testing_batch = batch_list[len(batch_list) - test_size : len(batch_list)]
 
