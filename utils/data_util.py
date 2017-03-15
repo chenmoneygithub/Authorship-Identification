@@ -80,7 +80,7 @@ this function takes a confusion matrix and display it
 """
 def visualize_cm(cm):
     l=np.shape(cm)[0]
-    fig = plt.imshow(cm, interpolation='nearest',cmap='hot')
+    plt.imshow(cm, interpolation='nearest',cmap='hot')
     plt.xticks(np.arange(0,l),range(l))
     plt.yticks(np.arange(0,l),range(l))
     plt.colorbar()
