@@ -14,8 +14,8 @@
 - The contribution of our work
 - The short descriptions of the following sections.
 
-##Approach
-###dataset
+## Approach
+### dataset
 - Reuters RCV1 news article dataset
 - Gutenberg story article dataset (self-collected and labeled) 
 - BBC
@@ -23,15 +23,15 @@
 ### word representation
 - gloVe (glove.6B.50d)
 
-###model
+### model
 - Recurrent Neural Network (RNN)
 - Gated Recurrent Unit (GRU)
 - Long Short Term Memory (LSTM)
 - Siamese Nets (SN)
 
-###baseline
+### baseline
 compared with whom ?
-###Experiment
+### Experiment
 ##### Procedures:
 Here should be a chart of the network, or sequence/flow chart of our procedure, followed by a paragraph describing the procedure.Also we can add some details of the converging iterations and converging times of the different approaches.
 ##### Results:
