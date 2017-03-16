@@ -1,6 +1,10 @@
 #here
+<<<<<<< Updated upstream
 import random
 import tensorflow as tf
+=======
+#import tensorflow as tf
+>>>>>>> Stashed changes
 import utils.glove as glove
 #import utils.data_util as data_util
 import numpy as np
@@ -289,6 +293,7 @@ def trial5():
 def trial6():
     f=open('results/writing_txt_trial.txt','a+')
     for i in range(2):
+        f.write("###\n")
         f.write("Appended line %d\r\n" % (i+1))
         f.write("writing the value of pi: {0:.5f}\n".format(math.pi))
         f.write(sys.argv[0]+"\n")
@@ -297,9 +302,11 @@ def trial6():
     f.close()
 
 
+def trial7():
+    return 1
+
 def main():
-    #trial1()
-    # trial4()
+
     trial5()
 
 if __name__=="__main__":

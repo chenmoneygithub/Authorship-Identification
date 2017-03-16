@@ -351,7 +351,7 @@ class RNNModel(AttributionModel):
         f.write("###\n")
         f.write("training model: "+sys.argv[0]+"\n")
         f.write("starting time: "+str(datetime.now())+"\n")
-        f.write("\n")
+
         f.write("parameters:\n")
         f.write("\tcell_type: "+Config.cell_type+"\n")
         f.write("\tembed_size: {}\n".format(Config.embed_size))
@@ -359,7 +359,7 @@ class RNNModel(AttributionModel):
         f.write("\tlearning_rate: {0:.4f}\n".format(Config.lr))
         f.write("\tregularization: {0:.5f}\n".format(Config.regularization))
         f.write("\tbatch_size: {}\n".format(Config.batch_size))
-        f.write("\n")
+
         f.write("training history:\n")
         f.write("epoch \t\t loss \t\t train_accu \t\t test_accu\n")
 
@@ -414,7 +414,7 @@ class RNNModel(AttributionModel):
     def train_model(self):
         # modify txt name from here
         training_history_txt_filename='results/training_history.txt'
-        
+
         if not os.path.exists(config.log_output):
             os.makedirs(os.path.dirname(config.log_output))
         handler = logging.FileHandler(config.log_output)

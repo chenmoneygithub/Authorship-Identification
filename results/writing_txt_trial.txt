@@ -1,33 +1,16 @@
-Appended line 1
-writing the value of pi: 3.14159
-trial.py
-Appended line 1
-writing the value of pi: 3.14159
-trial.py
-	additional padding3
+###
+training mode:xxx
+starting time:
+parameters:
+    cell_type:
+    embed_size:
+    hidden_size:
+    learning_rate:
+    regularization:
+    batch_size:
+training history:
+epoch \t\t loss \t\t train_accu \t\t test_accu
+1 0.1 0.13 0.2
+3 0.1 0.3232   0.5
 
-Appended line 2
-writing the value of pi: 3.14159
-trial.py
-	additional padding3
-
-Appended line 1
-writing the value of pi: 3.14159
-trial.py
-	additional 	 	padding3
-
-Appended line 2
-writing the value of pi: 3.14159
-trial.py
-	additional 	 	padding3
-
-Appended line 1
-writing the value of pi: 3.14159
-/Users/zhangrao/Downloads/Authorship-Identification/trial.py
-	additional 	 	padding3
-
-Appended line 2
-writing the value of pi: 3.14159
-/Users/zhangrao/Downloads/Authorship-Identification/trial.py
-	additional 	 	padding3
-
+###
