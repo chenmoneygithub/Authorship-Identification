@@ -15,3 +15,122 @@ epoch 		 loss 		 train_accu 		 test_accu
 0 		 1.57767 		 0.54167 		 0.35897
 
 
+###
+training model: /Users/ThomasChen/Documents/study_in_Stanford/CS224N/project/Authorship-Identification/siamese_network.py
+starting time: 2017-03-15 22:53:42.615768
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+###
+training model: /Users/ThomasChen/Documents/study_in_Stanford/CS224N/project/Authorship-Identification/siamese_network.py
+starting time: 2017-03-15 23:00:33.052965
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+###
+training model: /Users/ThomasChen/Documents/study_in_Stanford/CS224N/project/Authorship-Identification/siamese_network.py
+starting time: 2017-03-15 23:03:22.903534
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+###
+training model: /Users/ThomasChen/Documents/study_in_Stanford/CS224N/project/Authorship-Identification/siamese_network.py
+starting time: 2017-03-15 23:25:33.337728
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+###
+training model: /Users/ThomasChen/Documents/study_in_Stanford/CS224N/project/Authorship-Identification/siamese_network.py
+starting time: 2017-03-15 23:33:30.524722
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+###
+training model: /Users/ThomasChen/Documents/study_in_Stanford/CS224N/project/Authorship-Identification/siamese_network.py
+starting time: 2017-03-15 23:35:18.340257
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 5.06272 		 0.00000 		 0.00000
+###
+training model: /Users/ThomasChen/Documents/study_in_Stanford/CS224N/project/Authorship-Identification/siamese_network.py
+starting time: 2017-03-15 23:36:59.422003
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 5.09896 		 0.00000 		 0.00000
+
+
+###
+training model: /Users/ThomasChen/Documents/study_in_Stanford/CS224N/project/Authorship-Identification/siamese_network.py
+starting time: 2017-03-15 23:47:07.815347
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 4.92289 		 1.00000 		 1.00000
+
+

@@ -177,6 +177,41 @@ def pack_batch_list(batch_list, batch_size):
         packed_list.append([label_batch, feat_batch, mask_batch])
     return packed_list
 
+def pack_pair_list(pair_list, batch_size):
+    '''
+
+    Args:
+        batch_list:
+            batch_list[0]: label
+            batch_list[1]: feature
+            batch_list[2]: mask
+    Returns:
+        packed batch list
+    '''
+    packed_list = []
+    for start in range(0, len(pair_list), batch_size):
+        label_batch1 = []
+        feat_batch1 = []
+        mask_batch1 = []
+        label_batch2 = []
+        feat_batch2 = []
+        mask_batch2 = []
+        for i in range(start, min(len(pair_list), start + batch_size)):
+            label_batch1.append(pair_list[i][0][0])
+            feat_batch1.append(pair_list[i][0][1])
+            mask_batch1.append(pair_list[i][0][2])
+
+            label_batch2.append(pair_list[i][1][0])
+            feat_batch2.append(pair_list[i][1][1])
+            mask_batch2.append(pair_list[i][1][2])
+
+        packed_list.append([ [label_batch1, label_batch1] ,
+                             [feat_batch1, feat_batch2],
+                             [mask_batch1, mask_batch2] ])
+
+    return packed_list
+
+
 def match_word_to_vector(word, word_dict):
     # this function is to map a word to its Glove vector
     if(str.lower(word) in word_dict):

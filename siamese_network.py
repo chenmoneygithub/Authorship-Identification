@@ -51,11 +51,14 @@ class Config:
     hidden_size = 100
     batch_size = 16
 
-    n_epochs = 1
+    n_epochs = 41
     regularization = 0
 
     max_grad_norm = 10.0 # max gradients norm for clipping
     lr = 0.001 # learning rate
+
+    loss_lambda = 0.01
+    threshold = 0.5
 
     def __init__(self, args):
 
@@ -74,7 +77,7 @@ class Config:
         #self.conll_output = self.output_path + "{}_predictions.conll".format(self.cell)
         self.log_output = self.output_path + "log"
 
-class RNNModel(AttributionModel):
+class RNNModel():
     """
     Implements a recurrent neural network with an embedding layer and
     single hidden layer.
@@ -183,20 +186,13 @@ class RNNModel(AttributionModel):
 
         dropout_rate = self.dropout_placeholder
 
-        self.raw_preds = [] # Predicted output at each timestep should go here!
+        self.raw_preds1 = [] # Predicted output at each timestep should go here!
+        self.raw_preds2 = []
 
+        output1 = []
+        output2 = []
 
-        # Use the cell defined below. For Q2, we will just be using the
-        # RNNCell you defined, but for Q3, we will run this code again
-        # with a GRU cell!
-        if Config.cell_type=="rnn":
-            cell = RNNCell(Config.embed_size, Config.hidden_size)
-        elif Config.cell_type=="gru":
-            cell = GRUCell(Config.embed_size, Config.hidden_size)
-        else:
-            assert False, "Cell type undefined"
-        # Define U and b2 as variables.
-        # Initialize state as vector of zeros.
+        cell = GRUCell(Config.embed_size, Config.hidden_size)
 
         self.U = tf.get_variable('U',
                               [Config.hidden_size, Config.n_classes],
@@ -204,27 +200,28 @@ class RNNModel(AttributionModel):
         self.b2 = tf.get_variable('b2',
                               [Config.n_classes, ],
                               initializer = tf.contrib.layers.xavier_initializer())
-        h = tf.zeros([tf.shape(x1)[0], Config.hidden_size])
+        h1 = tf.zeros([tf.shape(x1)[0], Config.hidden_size])
+        h2 = tf.zeros([tf.shape(x2)[0], Config.hidden_size])
 
         with tf.variable_scope("RNN"):
             # For input 1
             for time_step in range(config.max_length):
                 if time_step >= 1:
                     tf.get_variable_scope().reuse_variables()
-                o, h = cell(x1[:,time_step,:], h)
-
-                o_drop1 = tf.nn.dropout(o, dropout_rate)
+                o1, h1 = cell(x1[:,time_step,:], h1)
+                output1.append(o1)
+                o_drop1 = tf.nn.dropout(o1, dropout_rate)
                 self.raw_preds1.append(tf.matmul(o_drop1, self.U) + self.b2)
 
             for time_step in range(config.max_length):
                 if time_step >= 1:
                     tf.get_variable_scope().reuse_variables()
-                o, h = cell(x2[:,time_step,:], h)
-
-                o_drop2 = tf.nn.dropout(o, dropout_rate)
+                o2, h2 = cell(x2[:,time_step,:], h2)
+                output2.append(o2)
+                o_drop2 = tf.nn.dropout(o2, dropout_rate)
                 self.raw_preds2.append(tf.matmul(o_drop2, self.U) + self.b2)
 
-        # Make sure to reshape @preds here.
+        # Make sure to reshape raw_preds
 
         preds1=tf.pack(self.raw_preds1)
         preds1=tf.reshape(tf.transpose(preds1, [1, 0, 2]),[-1,Config.max_length,Config.n_classes])
@@ -232,10 +229,36 @@ class RNNModel(AttributionModel):
         preds2=tf.pack(self.raw_preds2)
         preds2=tf.reshape(tf.transpose(preds2, [1, 0, 2]),[-1,Config.max_length,Config.n_classes])
 
-        return preds1, preds2
+        output1=tf.pack(output1)
+        output1=tf.reshape(tf.transpose(output1, [1, 0, 2]),[-1,Config.max_length,Config.hidden_size])
 
+        output2=tf.pack(output2)
+        output2=tf.reshape(tf.transpose(output2, [1, 0, 2]),[-1,Config.max_length,Config.hidden_size])
 
-    def add_loss_op(self, preds1, preds2):
+        return preds1, preds2, output1, output2
+
+    def extract_features(self, h1, h2):
+        #extract features in the Siamese network
+        feat_mask1=tf.reshape(self.mask_placeholder1,[-1,Config.max_length,1])
+        feat_mask1=tf.tile(feat_mask1,[1,1,Config.hidden_size])
+
+        feat_masked1=tf.multiply(h1,feat_mask1)
+        feat_masked1=tf.reduce_sum(feat_masked1,axis=1)
+
+        feat_mask2=tf.reshape(self.mask_placeholder2,[-1,Config.max_length,1])
+        feat_mask2=tf.tile(feat_mask2,[1,1,Config.hidden_size])
+
+        feat_masked2=tf.multiply(h2,feat_mask2)
+        feat_masked2=tf.reduce_sum(feat_masked2,axis=1)
+
+        return feat_masked1, feat_masked2
+
+    def add_veri_prediction(self, feat1, feat2):
+        cosine_pred = tf.reduce_sum(feat1 * feat2, 1) /( ( tf.sqrt(tf.reduce_sum(feat1 * feat1, 1)) * (tf.sqrt(tf.reduce_sum(feat2 * feat2, 1)) )) )
+
+        return cosine_pred
+
+    def add_loss_op(self, preds1, preds2, feat1, feat2):
         """Adds Ops for the loss function to the computational graph.
 
         Args:
@@ -259,11 +282,17 @@ class RNNModel(AttributionModel):
         self.pred_masked2=tf.reduce_sum(self.pred_masked2,axis=1)
 
 
-        loss1 = tf.nn.softmax_cross_entropy_with_logits(self.pred_masked1, self.labels_placeholder1)
-        loss2 = tf.nn.softmax_cross_entropy_with_logits(self.pred_masked2, self.labels_placeholder2)
+        iden_loss1 = tf.nn.softmax_cross_entropy_with_logits(self.pred_masked1, self.labels_placeholder1)
+        iden_loss2 = tf.nn.softmax_cross_entropy_with_logits(self.pred_masked2, self.labels_placeholder2)
 
-        loss = tf.reduce_mean(loss1) + tf.reduce_mean(loss2) + config.regularization * ( tf.nn.l2_loss(self.U) )
+        self.w_veri = tf.get_variable('w_veri', [1, ], initializer = tf.contrib.layers.xavier_initializer())
+        self.b_veri = tf.get_variable('b_veri', [1, ], initializer = tf.contrib.layers.xavier_initializer())
 
+        cosine_dis = tf.reduce_sum(feat1 * feat2, 1) / (tf.sqrt(tf.reduce_sum(feat1 * feat1, 1)) * (tf.sqrt(tf.reduce_sum(feat2 * feat2, 1)) ))
+        veri_loss = tf.nn.sigmoid(tf.mul(self.w_veri, cosine_dis) + self.b_veri)
+
+        # add identification loss
+        loss = tf.reduce_mean(iden_loss1 + iden_loss2 + tf.mul(config.loss_lambda, veri_loss)) + config.regularization * ( tf.nn.l2_loss(self.U) )
         with tf.variable_scope("RNN/cell", reuse= True):
             # add regularization
 
@@ -300,15 +329,18 @@ class RNNModel(AttributionModel):
         return train_op
 
 
-    def train_on_batch(self, sess, inputs_batch, batch_feat_mask, labels_batch, mask_batch):
+    def train_on_batch(self, sess, inputs_batch1, batch_feat_mask1, labels_batch1, mask_batch1,
+                       inputs_batch2, batch_feat_mask2, labels_batch2, mask_batch2):
 
-        feed = self.create_feed_dict(inputs_batch, batch_feat_mask, labels_batch=labels_batch, mask_batch=mask_batch,
-                                     dropout=Config.dropout)
-        _, loss, pred, pred_mask = sess.run([self.train_op, self.loss, self.pred, self.pred_mask], feed_dict=feed)
+        feed = self.create_feed_dict(inputs_batch1, batch_feat_mask1, mask_batch1,
+                                     inputs_batch2, batch_feat_mask2, mask_batch2,
+                                     labels_batch1, labels_batch2, dropout=Config.dropout)
+        _, loss = sess.run([self.train_op, self.loss], feed_dict=feed)
 
         return loss
 
-    def predict_on_batch(self, sess, inputs_batch, batch_feat_mask, mask_batch):
+    def predict_on_batch(self, sess, inputs_batch1, batch_feat_mask1, mask_batch1,
+                         inputs_batch2, batch_feat_mask2, mask_batch2):
         """Make predictions for the provided batch of data
 
         Args:
@@ -319,11 +351,10 @@ class RNNModel(AttributionModel):
             predictions: np.ndarray of shape (n_samples, n_classes)
             (after softmax)
         """
-        feed = self.create_feed_dict(inputs_batch, batch_feat_mask, mask_batch)
-        predictions = sess.run(tf.nn.softmax(self.pred), feed_dict=feed)
-        mask2=np.stack([mask_batch for i in range(Config.n_classes)] ,2)
-        pred2=np.sum(np.multiply(predictions,mask2),1)
-        return pred2
+        feed = self.create_feed_dict(inputs_batch1, batch_feat_mask1, mask_batch1,
+                                     inputs_batch2, batch_feat_mask2, mask_batch2)
+        cosine_pred = sess.run(self.cosine_pred, feed_dict=feed)
+        return cosine_pred
 
 
         """
@@ -385,13 +416,21 @@ class RNNModel(AttributionModel):
         total = 0
         accuCount = 0
         for batch in batch_list:
-            batch_feat = np.array(batch[1], dtype = np.int32)[:, :, 0, :]
-            batch_feat_mask = np.array(batch[1], dtype = np.float32)[:, :, 1, :]
-            batch_mask = np.array(batch[2], dtype = np.float32)
+            batch_feat1 = np.array(batch[1][0], dtype = np.int32)[:, :, 0, :]
+            batch_feat_mask1 = np.array(batch[1][0], dtype = np.float32)[:, :, 1, :]
+            batch_mask1 = np.array(batch[2][0], dtype = np.float32)
 
-            pred = self.predict_on_batch(session, batch_feat, batch_feat_mask, batch_mask)
-            accuCount += np.sum(np.argmax(pred,1) == batch[0])
-            total += len(batch[0])
+            batch_feat2 = np.array(batch[1][1], dtype = np.int32)[:, :, 0, :]
+            batch_feat_mask2 = np.array(batch[1][1], dtype = np.float32)[:, :, 1, :]
+            batch_mask2 = np.array(batch[2][1], dtype = np.float32)
+
+            raw_pred = self.predict_on_batch(session, batch_feat1, batch_feat_mask1, batch_mask1,
+                                                    batch_feat2, batch_feat_mask2, batch_mask2)
+            pred = np.array(raw_pred) > config.threshold
+            true_label = np.array(batch[0][0]) == np.array(batch[0][1])
+
+            accuCount += np.sum(pred == true_label)
+            total += len(batch[0][0])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy %f" %(accu)) )
         return accu
@@ -401,13 +440,21 @@ class RNNModel(AttributionModel):
         total = 0
         accuCount = 0
         for batch in batch_list:
-            batch_feat = np.array(batch[1], dtype = np.int32)[:, :, 0, :]
-            batch_feat_mask = np.array(batch[1], dtype = np.float32)[:, :, 1, :]
-            batch_mask = np.array(batch[2], dtype = np.float32)
+            batch_feat1 = np.array(batch[1][0], dtype = np.int32)[:, :, 0, :]
+            batch_feat_mask1 = np.array(batch[1][0], dtype = np.float32)[:, :, 1, :]
+            batch_mask1 = np.array(batch[2][0], dtype = np.float32)
 
-            pred = self.predict_on_batch(session, batch_feat, batch_feat_mask, batch_mask)
-            accuCount += np.sum(np.argmax(pred,1) == batch[0])
-            total += len(batch[0])
+            batch_feat2 = np.array(batch[1][1], dtype = np.int32)[:, :, 0, :]
+            batch_feat_mask2 = np.array(batch[1][1], dtype = np.float32)[:, :, 1, :]
+            batch_mask2 = np.array(batch[2][1], dtype = np.float32)
+
+            raw_pred = self.predict_on_batch(session, batch_feat1, batch_feat_mask1, batch_mask1,
+                                                    batch_feat2, batch_feat_mask2, batch_mask2)
+            pred = np.array(raw_pred) > config.threshold
+            true_label = np.array(batch[0][0]) == np.array(batch[0][1])
+
+            accuCount += np.sum(pred == true_label)
+            total += len(batch[0][0])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy on training set is: %f" %(accu)) )
         return accu
@@ -423,7 +470,7 @@ class RNNModel(AttributionModel):
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/gutenberg/data_sentence_index.pkl', 'rb')
+        pkl_file = open('../data/batch_data/gutenberg/data_sentence_pair.pkl', 'rb')
         batch_list = pickle.load(pkl_file)
         pkl_file.close()
 
@@ -444,6 +491,7 @@ class RNNModel(AttributionModel):
             #load_path = "results/RNN/20170310_1022/model.weights_20"
             #saver.restore(session, load_path)
 
+            '''
             #the following is a test for what in tensor
             batch = training_batch[0]
             batch_label = rmb.convertOnehotLabel(batch[0],  Config.n_classes)
@@ -454,19 +502,26 @@ class RNNModel(AttributionModel):
                                      dropout=Config.dropout)
             _, loss, raw_pred, pred = session.run([self.train_op, self.loss, self.raw_preds, self.pred], feed_dict=feed)
             ##############
-
+            '''
 
             for iterTime in range(Config.n_epochs):
                 loss_list = []
                 smallIter = 0
 
                 for batch in training_batch:
-                    batch_label = rmb.convertOnehotLabel(batch[0],  Config.n_classes)
-                    batch_feat = np.array(batch[1], dtype = np.int32)[:, :, 0, :]
-                    batch_feat_mask = np.array(batch[1], dtype = np.float32)[:, :, 1, :]
-                    batch_mask = np.array(batch[2], dtype = np.float32)
+                    batch_label1 = rmb.convertOnehotLabel(batch[0][0],  Config.n_classes)
+                    batch_feat1 = np.array(batch[1][0], dtype = np.int32)[:, :, 0, :]
+                    batch_feat_mask1 = np.array(batch[1][0], dtype = np.float32)[:, :, 1, :]
+                    batch_mask1 = np.array(batch[2][0], dtype = np.float32)
+
+                    batch_label2 = rmb.convertOnehotLabel(batch[0][1],  Config.n_classes)
+                    batch_feat2 = np.array(batch[1][1], dtype = np.int32)[:, :, 0, :]
+                    batch_feat_mask2 = np.array(batch[1][1], dtype = np.float32)[:, :, 1, :]
+                    batch_mask2 = np.array(batch[2][1], dtype = np.float32)
+
                     #print batch_mask
-                    loss = self.train_on_batch(session, batch_feat,batch_feat_mask, batch_label, batch_mask)
+                    loss = self.train_on_batch(session, batch_feat1,batch_feat_mask1, batch_label1, batch_mask1,
+                                               batch_feat2,batch_feat_mask2, batch_label2, batch_mask2)
                     loss_list.append(loss)
                     smallIter += 1
 
@@ -482,7 +537,7 @@ class RNNModel(AttributionModel):
                 average_train_loss=np.mean(np.array(loss_list))
                 self.record_history_accu(training_history_file,iterTime,average_train_loss,train_accu,test_accu)
 
-                if(iterTime % 10 == 0):
+                if(iterTime % 10 == 0 and iterTime != 0):
                     logger.info(("epoch %d : loss : %f" %(iterTime, np.mean(np.mean(np.array(loss)))) ))
                     saver.save(session, self.config.model_output + "_%d"%(iterTime))
 
@@ -497,7 +552,9 @@ class RNNModel(AttributionModel):
 
     def __init__(self, config, pretrained_embeddings, report=None):
 
-        super(RNNModel, self).__init__(config)
+        #super(RNNModel, self).__init__(config)
+        self.config = config
+
         self.pretrained_embeddings = pretrained_embeddings
 
         self.input_placeholder = None
@@ -506,7 +563,12 @@ class RNNModel(AttributionModel):
         self.mask_placeholder = None
         self.dropout_placeholder = None
 
-        self.build()
+        self.add_placeholders()
+        self.pred1, self.pred2, self.output1, self.output2 = self.add_prediction_op()
+        self.feat1, self.feat2 = self.extract_features(self.output1, self.output2)
+        self.cosine_pred = self.add_veri_prediction(self.feat1, self.feat2)
+        self.loss = self.add_loss_op(self.pred1, self.pred2, self.feat1, self.feat2)
+        self.train_op = self.add_training_op(self.loss)
 
 
 if __name__ == "__main__":
