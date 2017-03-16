@@ -31,7 +31,7 @@
 
 ### baseline
 compared with whom ?
-### Experiment
+## Experiment
 ##### Procedures:
 Here should be a chart of the network, or sequence/flow chart of our procedure, followed by a paragraph describing the procedure.Also we can add some details of the converging iterations and converging times of the different approaches.
 ##### Results:
@@ -39,7 +39,7 @@ Here should be a chart of the network, or sequence/flow chart of our procedure, 
 - Different parameters
 - Different datasets
 - Comparison with previous results
-### Conclusion
+## Conclusion
 What kind of result we have?
 What kind of conclusion can we arrive?
 What kind of further work that we can do?
