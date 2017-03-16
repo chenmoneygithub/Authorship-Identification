@@ -1,20 +1,18 @@
-#here
-<<<<<<< Updated upstream
+
 import random
 import tensorflow as tf
-=======
-#import tensorflow as tf
->>>>>>> Stashed changes
+
 import utils.glove as glove
 #import utils.data_util as data_util
 import numpy as np
 import pickle
 import utils.confusion_matrix as cm
-import utils.data_util as du
+#import utils.data_util as du
 #from proj_rnn_cell import RNNCell
 import math
 import sys
-
+import re
+import utils.parse_history as ph
 #print wordVectors
 # let's say the sentence is "this is a file", labeled 1
 # "this is dummy", labeled 2
@@ -303,11 +301,39 @@ def trial6():
 
 
 def trial7():
-    return 1
+    filename="results/writing_txt_trial.txt"
+    f=open(filename,'r')
+    lines=f.readlines()
+    for aline in lines:
+        print aline, type(aline)
+        l=aline.split(" ")
+        print [re.sub(r'\n', '', s) for s in l if s!='']
+        if aline=="###\n":
+            print "here"
+
+
+def trial8():
+    filename="results/writing_txt_trial.txt"
+    f=open(filename,'r')
+    all_th=ph.parse_file(f)
+    for one_th in all_th:
+        print 'model',one_th.model
+        print 'starting_time',one_th.starting_time
+        print 'cell_type',one_th.cell_type
+        print 'embed_size',one_th.embed_size
+        print 'hidden_size',one_th.hidden_size
+        print 'learning_rate',one_th.learning_rate
+        print 'regularization',one_th.regularization
+        print 'batch_size',one_th.batch_size
+        print 'epoch',one_th.epoch
+        print 'loss',one_th.loss
+        print 'train_accu',one_th.train_accu
+        print 'test_accu',one_th.test_accu
+        print
 
 def main():
 
-    trial5()
+    trial8()
 
 if __name__=="__main__":
     main()

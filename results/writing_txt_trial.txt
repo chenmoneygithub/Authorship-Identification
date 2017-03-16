@@ -1,16 +1,35 @@
 ###
-training mode:xxx
-starting time:
+training_model: xxx.py
+starting_time: 1319
+
 parameters:
-    cell_type:
-    embed_size:
-    hidden_size:
-    learning_rate:
-    regularization:
-    batch_size:
+    cell_type: gru
+    embed_size: 50
+    hidden_size: 100
+    learning_rate: 0.001
+    regularization: 0.00001
+    batch_size: 15
+
 training history:
-epoch \t\t loss \t\t train_accu \t\t test_accu
+epoch loss  train_accu   test_accu
 1 0.1 0.13 0.2
 3 0.1 0.3232   0.5
+END
 
 ###
+training_model: xxx.py
+starting_time: 1319
+
+parameters:
+    cell_type: gru
+    embed_size: 3000
+    hidden_size: 100
+    learning_rate: 0.001
+    regularization: 0.00001
+    batch_size: 15
+
+training history:
+epoch loss  train_accu   test_accu
+1 0.1 0.13 0.2
+3 0.1 0.3232   0.5
+END
