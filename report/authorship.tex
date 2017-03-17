@@ -8,7 +8,7 @@
 Chen Qian \qquad Tianchang He \qquad Rao Zhang\\
 Department of Electrical Engineering \\
 Stanford University \\
-\texttt{cqian23@stanford.edu th7@stanford.edu zhangrao@stanford.edu} \\
+\texttt{cqian23@stanford.edu \quad th7@stanford.edu \quad zhangrao@stanford.edu} \\
 }
 \newcommand{\fix}{\marginpar{FIX}}
 \newcommand{\new}{\marginpar{NEW}}
@@ -27,6 +27,15 @@ paragraph.
 
 \section{Approach}
 \subsection{Data Sets}
+\subsubsection{Reuter\_50\_50}
+The Reuter\_50\_50 dataset is a subset of RCV1. RCV1 (Reuters Corpus Volume I) an archive of over 800,000 manually categorized newswire
+stories recently made available by Reuters, Ltd. for research purposes. [RCV1: A New Benchmark Collection
+for Text Categorization Research] These corpus has already been used in author identification experiments. In the top 50 authors (with respect to total size of articles) were selected. 50 authors of texts labeled with at least one subtopic of the class CCAT(corporate/industrial) were selected. That way, it is attempted to minimize the topic factor in distinguishing among the texts. The training corpus consists of 2,500 texts (50 per author) and the test corpus includes other 2,500 texts (50 per author) non-overlapping with the training texts.\cite{Reuter} In our work, we re-organize these 5000 texts into non-overlapping 9:1 ratio as train set to test set.
+\subsubsection{Gutenberg}
+The Gutenberg dataset is a story dataset collected and labeled by ourselves. Project Gutenberg \cite{Gutenberg}  offers over 53,000 free ebooks on the Internet. On this website, we collected multiple stories of 50 authors among the top 100 most popular authors and built up the dataset. The stories cover a wide variety of topics and styles in order to minimize the topic factor as well. During the process of collecting, we manually reduced some noise contained in the text, such as page number table of contents and information of the contributors. For each author, we selected 900 paragraphs from his/her stories, hence 45000 paragraphs are maintained in our corpus. We split them into non-overlapping 9:1 ratio as train set to test set.
+\subsubsection{Parsing of the datasets}
+Since we used glove.6B.50 as a look-up table to represent our words, there could exist rarely-seen words which cannot be represented.
+Hence, we eliminated the occurrences of numbers and special characters to match the feature of our word representations. During the process of parsing, we trimmed each word to ensure that it does not contain any number or special character at both of its ends.
 
 \subsection{Word Representations}
 
@@ -403,7 +412,7 @@ final paper.
 
 \subsubsection*{References}
 
-References follow the acknowledgments. Use unnumbered third level heading for
+References \cite{dev} follow \cite{abc} the acknowledgments. Use unnumbered third level heading for
 the references. Any choice of citation style is acceptable as long as you are
 consistent. It is permissible to reduce the font size to `small' (9-point) 
 when listing the references. {\bf Remember that this year you can use
@@ -424,5 +433,10 @@ and recall at excitatory recurrent synapses and cholinergic modulation
 in rat hippocampal region CA3. {\it Journal of Neuroscience}
 {\bf 15}(7):5249-5262.
 }
+
+\begin{thebibliography}{99}
+\bibitem{Reuter} https://archive.ics.uci.edu/ml/datasets/Reuter\_50\_50
+\bibitem{Gutenberg} https://www.gutenberg.org/wiki/Main\_Page
+\end{thebibliography}
 
 \end{document}
