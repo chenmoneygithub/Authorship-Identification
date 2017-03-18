@@ -1,6 +1,10 @@
 import re
 import numpy as np
 
+
+# /Users/kevinhe/Documents/Stanford\ Academic/2016-17\ Winter/CS224n\ Natural\ Language\ Processing\ with\ Deep\ Learning/Project\ path/Authorship-Identification
+
+
 class TrainingHistory:
     def __init__(self,l,numbers):
         self.model=l[0]
