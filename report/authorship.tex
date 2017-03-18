@@ -7,7 +7,7 @@
 \author{
 Chen Qian \qquad Tianchang He \qquad Rao Zhang\\
 Department of Electrical Engineering \\
-Stanford University \\
+Stanford University, Stanford, CA 94305 \\
 \texttt{cqian23@stanford.edu \quad th7@stanford.edu \quad zhangrao@stanford.edu} \\
 }
 \newcommand{\fix}{\marginpar{FIX}}
@@ -29,8 +29,7 @@ paragraph.
 \subsection{Data Sets}
 \subsubsection{Reuter\_50\_50}
 The Reuter\_50\_50 dataset is a subset of RCV1. RCV1 (Reuters Corpus Volume I) an archive of over 800,000 manually categorized newswire
-stories recently made available by Reuters, Ltd. for research purposes. [RCV1: A New Benchmark Collection
-for Text Categorization Research] These corpus has already been used in author identification experiments. In the top 50 authors (with respect to total size of articles) were selected. 50 authors of texts labeled with at least one subtopic of the class CCAT(corporate/industrial) were selected. That way, it is attempted to minimize the topic factor in distinguishing among the texts. The training corpus consists of 2,500 texts (50 per author) and the test corpus includes other 2,500 texts (50 per author) non-overlapping with the training texts.\cite{Reuter} In our work, we re-organize these 5000 texts into non-overlapping 9:1 ratio as train set to test set.
+stories recently made available by Reuters, Ltd. for research purposes. \cite{RCV} These corpus has already been used in author identification experiments. In the top 50 authors (with respect to total size of articles) were selected. 50 authors of texts labeled with at least one subtopic of the class CCAT(corporate/industrial) were selected. That way, it is attempted to minimize the topic factor in distinguishing among the texts. The training corpus consists of 2,500 texts (50 per author) and the test corpus includes other 2,500 texts (50 per author) non-overlapping with the training texts.\cite{Reuter} In our work, we re-organize these 5000 texts into non-overlapping 9:1 ratio as train set to test set.
 \subsubsection{Gutenberg}
 The Gutenberg dataset is a story dataset collected and labeled by ourselves. Project Gutenberg \cite{Gutenberg}  offers over 53,000 free ebooks on the Internet. On this website, we collected multiple stories of 50 authors among the top 100 most popular authors and built up the dataset. The stories cover a wide variety of topics and styles in order to minimize the topic factor as well. During the process of collecting, we manually reduced some noise contained in the text, such as page number table of contents and information of the contributors. For each author, we selected 900 paragraphs from his/her stories, hence 45000 paragraphs are maintained in our corpus. We split them into non-overlapping 9:1 ratio as train set to test set.
 \subsubsection{Parsing of the datasets}
@@ -435,6 +434,7 @@ in rat hippocampal region CA3. {\it Journal of Neuroscience}
 }
 
 \begin{thebibliography}{99}
+\bibitem{RCV} Lewis D D, Yang Y, Rose T G, et al. Rcv1: A new benchmark collection for text categorization research[J]. Journal of machine learning research, 2004, 5(Apr): 361-397. 
 \bibitem{Reuter} https://archive.ics.uci.edu/ml/datasets/Reuter\_50\_50
 \bibitem{Gutenberg} https://www.gutenberg.org/wiki/Main\_Page
 \end{thebibliography}
