@@ -205,7 +205,7 @@ def pack_pair_list(pair_list, batch_size):
             feat_batch2.append(pair_list[i][1][1])
             mask_batch2.append(pair_list[i][1][2])
 
-        packed_list.append([ [label_batch1, label_batch1] ,
+        packed_list.append([ [label_batch1, label_batch2] ,
                              [feat_batch1, feat_batch2],
                              [mask_batch1, mask_batch2] ])
 

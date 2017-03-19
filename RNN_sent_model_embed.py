@@ -383,6 +383,9 @@ class RNNModel(AttributionModel):
         print "Now, testing on the test set..."
         total = 0
         accuCount = 0
+        pred_list = []
+        real_label_list = []
+
         for batch in batch_list:
             batch_feat = np.array(batch[1], dtype = np.int32)[:, :, 0, :]
             batch_feat_mask = np.array(batch[1], dtype = np.float32)[:, :, 1, :]
@@ -390,6 +393,7 @@ class RNNModel(AttributionModel):
 
             pred = self.predict_on_batch(session, batch_feat, batch_feat_mask, batch_mask)
             accuCount += np.sum(np.argmax(pred,1) == batch[0])
+            pred_list.extend(np.argmax(pred,1).tolist())
             total += len(batch[0])
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy %f" %(accu)) )

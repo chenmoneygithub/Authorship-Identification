@@ -470,7 +470,7 @@ class RNNModel():
         handler.setFormatter(logging.Formatter('%(message)s'))
         logging.getLogger().addHandler(handler)
 
-        pkl_file = open('../data/batch_data/gutenberg/data_sentence_pair.pkl', 'rb')
+        pkl_file = open('../data/batch_data/C50/data_sentence_pair.pkl', 'rb')
         batch_list = pickle.load(pkl_file)
         pkl_file.close()
 
@@ -488,8 +488,8 @@ class RNNModel():
         saver = tf.train.Saver()
         with tf.Session() as session:
             session.run(init)
-            #load_path = "results/RNN/20170310_1022/model.weights_20"
-            #saver.restore(session, load_path)
+           # load_path = "results/RNN/siamese_3_16/model.weights_0"
+           # saver.restore(session, load_path)
 
             '''
             #the following is a test for what in tensor
@@ -503,6 +503,26 @@ class RNNModel():
             _, loss, raw_pred, pred = session.run([self.train_op, self.loss, self.raw_preds, self.pred], feed_dict=feed)
             ##############
             '''
+
+            #the following is a test for what in tensor
+            batch = training_batch[0]
+            batch_label1 = rmb.convertOnehotLabel(batch[0][0],  Config.n_classes)
+            batch_feat1 = np.array(batch[1][0], dtype = np.int32)[:, :, 0, :]
+            batch_feat_mask1 = np.array(batch[1][0], dtype = np.float32)[:, :, 1, :]
+            batch_mask1 = np.array(batch[2][0], dtype = np.float32)
+
+            batch_label2 = rmb.convertOnehotLabel(batch[0][1],  Config.n_classes)
+            batch_feat2 = np.array(batch[1][1], dtype = np.int32)[:, :, 0, :]
+            batch_feat_mask2 = np.array(batch[1][1], dtype = np.float32)[:, :, 1, :]
+            batch_mask2 = np.array(batch[2][1], dtype = np.float32)
+
+            feed = self.create_feed_dict(batch_feat1, batch_feat_mask1, batch_mask1,
+                                         batch_feat2, batch_feat_mask2, batch_mask2,
+                                         batch_label1, batch_label2,
+                                     dropout=Config.dropout)
+            _, loss, feat1, feat2 = session.run([self.train_op, self.loss, self.feat1, self.feat2], feed_dict=feed)
+            ##############
+
 
             for iterTime in range(Config.n_epochs):
                 loss_list = []

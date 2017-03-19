@@ -44,7 +44,7 @@ class Config:
     instantiation.
     """
 
-    cell_type="gru" # either rnn, gru or lstm
+    cell_type="lstm" # either rnn, gru or lstm
 
     window_size = 0
 
@@ -177,6 +177,7 @@ class RNNModel(AttributionModel):
             init_state = tf.nn.rnn_cell.LSTMStateTuple(cell_state, hidden_state)
             cell = tf.nn.rnn_cell.BasicLSTMCell(Config.hidden_size, state_is_tuple=True)
             inputs_series=tf.split(1,Config.max_length,x)
+            inputs_series = [tf.reshape(input, [-1, config.embed_size]) for input in inputs_series ]
             outputs, current_state = tf.nn.rnn(cell, inputs_series, init_state)
 
 
@@ -190,7 +191,7 @@ class RNNModel(AttributionModel):
 
             preds=[tf.matmul(o, self.U) + self.b2 for o in outputs]
             self.raw_preds=tf.pack(preds)
-            preds=tf.reshape(self.raw_preds,[-1,Config.max_length,Config.n_classes])
+            preds=tf.reshape(tf.transpose(self.raw_preds, [1, 0, 2]),[-1,Config.max_length,Config.n_classes])
             return preds
 
 
@@ -263,15 +264,16 @@ class RNNModel(AttributionModel):
         loss = tf.nn.softmax_cross_entropy_with_logits(pred_masked, self.labels_placeholder)
 
         loss = tf.reduce_mean(loss) + config.regularization * ( tf.nn.l2_loss(self.U) )
-        with tf.variable_scope("RNN/cell", reuse= True):
-            # add regularization
+        if config.cell_type == "gru":
+            with tf.variable_scope("RNN/cell", reuse= True):
+                # add regularization
 
-            loss += config.regularization * (tf.nn.l2_loss(tf.get_variable("W_r"))
-                                             + tf.nn.l2_loss(tf.get_variable("U_r"))
-                                             + tf.nn.l2_loss(tf.get_variable("W_z"))
-                                             + tf.nn.l2_loss(tf.get_variable("U_z"))
-                                             + tf.nn.l2_loss(tf.get_variable("W_o"))
-                                             + tf.nn.l2_loss(tf.get_variable("U_o")))
+                loss += config.regularization * (tf.nn.l2_loss(tf.get_variable("W_r"))
+                                                 + tf.nn.l2_loss(tf.get_variable("U_r"))
+                                                 + tf.nn.l2_loss(tf.get_variable("W_z"))
+                                                 + tf.nn.l2_loss(tf.get_variable("U_z"))
+                                                 + tf.nn.l2_loss(tf.get_variable("W_o"))
+                                                 + tf.nn.l2_loss(tf.get_variable("U_o")))
         return loss
 
     def add_training_op(self, loss):
