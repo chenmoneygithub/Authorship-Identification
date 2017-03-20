@@ -1,0 +1,150 @@
+###
+training_model: RNN_sent_model_embed.py
+starting_time: 2017-03-16 21:55:01.472013
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0005
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 3.31822 		 0.27083 		 0.25946
+1 		 2.42042 		 0.42742 		 0.38716
+2 		 1.84739 		 0.53293 		 0.48649
+3 		 1.39370 		 0.65121 		 0.58041
+4 		 1.03385 		 0.72849 		 0.64392
+5 		 0.75409 		 0.80847 		 0.71014
+6 		 0.54105 		 0.86223 		 0.72973
+7 		 0.39351 		 0.90793 		 0.77905
+8 		 0.27987 		 0.93347 		 0.79932
+9 		 0.20876 		 0.95833 		 0.82027
+END
+
+###
+training model: siamese_network.py
+starting time: 2017-03-17 00:04:27.437097
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 6.35964 		 0.24219 		 0.23197
+1 		 5.05598 		 0.24279 		 0.22837
+2 		 4.66568 		 0.24079 		 0.22796
+###
+training model: siamese_network.py
+starting time: 2017-03-17 00:40:45.100162
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.60000 		 0.92768 		 0.93249
+1 		 0.16800 		 0.94832 		 0.95633
+###
+training model: siamese_network.py
+starting time: 2017-03-18 05:39:38.159956
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00500
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.28918 		 0.92288 		 0.92468
+1 		 0.75771 		 0.94030 		 0.93890
+2 		 0.61900 		 0.93490 		 0.93950
+3 		 0.53327 		 0.96534 		 0.96615
+4 		 0.49153 		 0.97496 		 0.97576
+5 		 0.46604 		 0.98057 		 0.98097
+6 		 0.40643 		 0.98598 		 0.98838
+7 		 0.40816 		 0.99139 		 0.99099
+8 		 0.39715 		 0.99239 		 0.99139
+9 		 0.36072 		 0.99339 		 0.99239
+10 		 0.36206 		 0.99419 		 0.99439
+11 		 0.35416 		 0.99499 		 0.99579
+12 		 0.33678 		 0.99399 		 0.99419
+###
+training_model: RNN_sent_model.py
+starting_time: 2017-03-19 01:48:18.496763
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.0000000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+###
+training_model: RNN_average_model.py
+starting_time: 2017-03-19 02:14:06.685723
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 150
+	learning_rate: 0.0010
+	regularization: 0.0000000
+	batch_size: 64
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.63045 		 0.45877 		 0.35880
+1 		 1.54173 		 0.61692 		 0.42786
+2 		 1.09828 		 0.71829 		 0.44877
+3 		 0.78750 		 0.80528 		 0.45385
+4 		 0.55673 		 0.85826 		 0.44942
+5 		 0.38587 		 0.89673 		 0.44493
+6 		 0.27420 		 0.92765 		 0.44132
+7 		 0.19650 		 0.94682 		 0.43679
+8 		 0.13688 		 0.95949 		 0.43603
+9 		 0.10071 		 0.96475 		 0.42517
+###
+training_model: RNN_average_model.py
+starting_time: 2017-03-19 02:31:28.713025
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 150
+	learning_rate: 0.0010
+	regularization: 0.0000000
+	batch_size: 64
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.59948 		 0.46264 		 0.36507
+1 		 1.51047 		 0.61541 		 0.42523
+2 		 1.07480 		 0.71580 		 0.44243
+3 		 0.77285 		 0.79793 		 0.44417
+4 		 0.55095 		 0.85478 		 0.44233
+5 		 0.39299 		 0.90106 		 0.44161
+6 		 0.27617 		 0.92732 		 0.43981
+7 		 0.19611 		 0.94347 		 0.43567
+8 		 0.13905 		 0.94525 		 0.43249
+9 		 0.10450 		 0.95674 		 0.42120
+END
+

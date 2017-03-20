@@ -1,0 +1,104 @@
+###
+training_model: RNN_sent_model_embed.py
+starting_time: 2017-03-16 22:21:37.099801
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0005
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 3.33705 		 0.27621 		 0.26892
+1 		 2.45234 		 0.44960 		 0.40338
+2 		 1.83840 		 0.58132 		 0.50743
+3 		 1.36494 		 0.69288 		 0.60608
+4 		 0.99977 		 0.78427 		 0.67230
+5 		 0.72217 		 0.85417 		 0.72095
+6 		 0.50804 		 0.90390 		 0.75541
+7 		 0.35471 		 0.93683 		 0.79662
+8 		 0.25017 		 0.96169 		 0.81689
+9 		 0.17290 		 0.96573 		 0.82162
+END
+
+###
+training_model: RNN_sent_model_embed.py
+starting_time: 2017-03-16 22:44:06.883446
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.99641 		 0.36626 		 0.35203
+1 		 1.76124 		 0.61694 		 0.55811
+2 		 0.99808 		 0.77151 		 0.67905
+3 		 0.56050 		 0.89247 		 0.76284
+4 		 0.31751 		 0.94556 		 0.80743
+5 		 0.18750 		 0.97715 		 0.85000
+6 		 0.12006 		 0.98589 		 0.86149
+7 		 0.07387 		 0.99328 		 0.87635
+8 		 0.04444 		 0.99462 		 0.86757
+9 		 0.04390 		 1.00000 		 0.88243
+END
+
+###
+training_model: RNN_sent_model_embed.py
+starting_time: 2017-03-16 23:09:04.549675
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0020
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.55993 		 0.56720 		 0.52162
+1 		 0.99074 		 0.82930 		 0.72838
+2 		 0.35127 		 0.96035 		 0.84122
+3 		 0.14021 		 0.97715 		 0.86554
+4 		 0.06686 		 0.98387 		 0.87973
+5 		 0.03621 		 0.99059 		 0.89595
+6 		 0.02391 		 0.97379 		 0.86554
+7 		 0.01863 		 0.99664 		 0.89392
+8 		 0.01698 		 0.99462 		 0.90000
+9 		 0.01870 		 0.99462 		 0.91216
+END
+
+###
+training_model: RNN_sent_model_embed.py
+starting_time: 2017-03-16 23:31:42.914804
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0040
+	regularization: 0.00000
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.00232 		 0.78763 		 0.72703
+1 		 0.40517 		 0.96707 		 0.88784
+2 		 0.08305 		 0.97715 		 0.88311
+3 		 0.02689 		 0.99866 		 0.92027
+4 		 0.01625 		 0.99866 		 0.92162
+5 		 0.00221 		 1.00000 		 0.92770
+6 		 0.02546 		 0.99664 		 0.91757
+7 		 0.00972 		 0.99530 		 0.91014
+8 		 0.00781 		 0.99933 		 0.93446
+9 		 0.00040 		 1.00000 		 0.93378
+END
+

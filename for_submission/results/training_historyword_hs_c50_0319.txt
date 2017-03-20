@@ -1,0 +1,16 @@
+###
+training_model: RNN_average_model.py
+starting_time: 2017-03-20 03:17:11.778247
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 150
+	learning_rate: 0.0010
+	regularization: 0.0000000
+	batch_size: 64
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.63669 		 0.46501 		 0.36133
+1 		 1.54333 		 0.61555 		 0.42871

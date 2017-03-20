@@ -1,0 +1,127 @@
+###
+training model: siamese_network.py
+starting time: 2017-03-19 06:19:48.416686
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00500
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.28848 		 0.91847 		 0.91326
+1 		 0.80667 		 0.93490 		 0.93009
+2 		 0.62681 		 0.95673 		 0.95333
+3 		 0.54217 		 0.97095 		 0.96675
+4 		 0.49370 		 0.97997 		 0.98237
+END
+
+###
+training model: siamese_network.py
+starting time: 2017-03-19 06:46:30.741977
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00500
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.29960 		 0.91086 		 0.91386
+1 		 0.77624 		 0.92488 		 0.92768
+2 		 0.61970 		 0.94471 		 0.94571
+3 		 0.55105 		 0.96875 		 0.96494
+4 		 0.46569 		 0.97937 		 0.97756
+END
+
+###
+training model: siamese_network.py
+starting time: 2017-03-19 19:32:06.116795
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00500
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.30084 		 0.90765 		 0.90946
+1 		 0.79075 		 0.91466 		 0.91847
+2 		 0.65776 		 0.94231 		 0.94171
+3 		 0.55387 		 0.94992 		 0.95613
+4 		 0.50111 		 0.96595 		 0.96755
+END
+
+###
+training model: siamese_network.py
+starting time: 2017-03-19 20:02:06.360668
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00500
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.39033 		 0.90345 		 0.90284
+1 		 0.80409 		 0.92107 		 0.91887
+2 		 0.63369 		 0.93049 		 0.93169
+3 		 0.55172 		 0.94832 		 0.94932
+4 		 0.50810 		 0.95954 		 0.96394
+END
+
+###
+training model: siamese_network.py
+starting time: 2017-03-19 21:09:32.426542
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00500
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.36957 		 0.90545 		 0.90505
+1 		 0.81660 		 0.92087 		 0.91687
+2 		 0.65072 		 0.93990 		 0.93490
+3 		 0.58820 		 0.95813 		 0.95873
+4 		 0.50867 		 0.96935 		 0.96895
+END
+
+
+###
+training model: siamese_network.py
+starting time: 2017-03-19 22:13:14.785969
+
+parameters:
+	cell_type: gru
+	embed_size: 50
+	hidden_size: 100
+	learning_rate: 0.0010
+	regularization: 0.00500
+	batch_size: 16
+
+training history:
+epoch 		 loss 		 train_accu 		 test_accu
+0 		 2.51391 		 0.90064 		 0.90064
+1 		 0.83193 		 0.91987 		 0.91426
+2 		 0.64676 		 0.93570 		 0.93429
+3 		 0.55452 		 0.95473 		 0.94852
+4 		 0.50034 		 0.97055 		 0.96675
+END
+
