@@ -7,7 +7,7 @@ import utils.glove as glove
 import numpy as np
 import pickle
 import utils.confusion_matrix as cm
-#import utils.data_util as du
+import utils.data_util as du
 #from proj_rnn_cell import RNNCell
 import math
 import sys
@@ -283,7 +283,7 @@ def trial5():
 
     t_cm = cm.generate_cm(real, pred, 50)
     x = t_cm.as_matrix().astype(np.uint8)
-    du.visualize_cm(x)
+    du.visualize_cm(x, "shit")
     print "done"
 
 
@@ -333,7 +333,7 @@ def trial8():
 
 def main():
 
-    trial8()
+    trial5()
 
 if __name__=="__main__":
     main()

@@ -357,6 +357,42 @@ class RNNModel(AttributionModel):
         accu = accuCount * 1.0 / total
         logger.info( ("Test accuracy on training set is: %f" %(accu)) )
 
+    def process_model_output(self):
+
+        pkl_file = open('../data/batch_data/C50/data_article_test.pkl', 'rb')
+        batch_list = pickle.load(pkl_file)
+        pkl_file.close()
+
+        test_size = int(len(batch_list) / 1)
+        training_batch = batch_list[0 : len(batch_list) - test_size]
+        print test_size, len(batch_list)
+        testing_batch = batch_list[len(batch_list) - test_size : len(batch_list)]
+
+        saver = tf.train.Saver()
+        with tf.Session() as session:
+            #session.run(init)
+            load_path = "results/RNN/20170319_032842/model.weights_10"
+            saver.restore(session, load_path)
+
+            print "Now, collecting the model outputs..."
+            total = 0
+            accuCount = 0
+
+            for batch in testing_batch:
+                batch_feat = np.array(batch[1], dtype = np.int32)
+                batch_mask = np.array(batch[2], dtype = np.float32)
+
+                preds = predict_on_batch(session, batch_feat, batch_mask)
+                author_find = data_util.find_author(preds)
+                if author_find == batch[0]:
+                    accuCount += 1
+                total += 1
+            accuracy = accuCount / total
+            print ("The testing accuracy is: %f"%(accuracy))
+
+            return accuracy
+
+
     def train_model(self):
 
         if not os.path.exists(config.log_output):

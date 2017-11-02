@@ -15,6 +15,8 @@ import pickle
 import file2dict as fdt
 import utils.read_minibatch as rmb
 import utils.data_util as data_util
+import utils.confusion_matrix as cm
+import utils.data_util as du
 
 from datetime import datetime
 
@@ -48,7 +50,7 @@ class Config:
 
     embed_size = 50
 
-    hidden_size = 100
+    hidden_size = 50
     batch_size = 16
 
     n_epochs = 1
@@ -110,13 +112,13 @@ class RNNModel(AttributionModel):
                 <placeholder>: <tensor of values to be passed for placeholder>,
                 ....
         }
+            mask_batch:   A batch of mask data.
+            labels_batch: A batch of label data.
+            dropout: The dropout rate.
 
 
         Args:
             inputs_batch: A batch of input data.
-            mask_batch:   A batch of mask data.
-            labels_batch: A batch of label data.
-            dropout: The dropout rate.
         Returns:
             feed_dict: The feed dictionary mapping from placeholders to values.
         """
@@ -415,6 +417,51 @@ class RNNModel(AttributionModel):
         logger.info( ("Test accuracy on training set is: %f" %(accu)) )
         return accu
 
+    def process_model_output(self):
+
+        pkl_file = open('../data/batch_data/gutenberg/data_sentence_index.pkl', 'rb')
+        batch_list = pickle.load(pkl_file)
+        pkl_file.close()
+
+        test_size = int(len(batch_list) / 10)
+        training_batch = batch_list[0 : len(batch_list) - test_size]
+        print test_size, len(batch_list)
+        testing_batch = batch_list[len(batch_list) - test_size : len(batch_list)]
+
+        saver = tf.train.Saver()
+        with tf.Session() as session:
+            #session.run(init)
+            load_path = "results/RNN/20170318_221625/model.weights_10"
+            saver.restore(session, load_path)
+
+            print "Now, collecting the model outputs..."
+            total = 0
+            accuCount = 0
+            pred_list = []
+            real_label_list = []
+            for batch in testing_batch:
+                batch_feat = np.array(batch[1], dtype = np.int32)[:, :, 0, :]
+                batch_feat_mask = np.array(batch[1], dtype = np.float32)[:, :, 1, :]
+                batch_mask = np.array(batch[2], dtype = np.float32)
+
+                pred = self.predict_on_batch(session, batch_feat, batch_feat_mask, batch_mask)
+                accuCount += np.sum(np.argmax(pred,1) == batch[0])
+                pred_list.extend(np.argmax(pred,1).tolist())
+                real_label_list.extend(batch[0])
+                total += len(batch[0])
+            accu = accuCount * 1.0 / total
+            print( ("Test accuracy %f" %(accu)) )
+
+            t_cm = cm.generate_cm(real_label_list,pred_list, 50)
+            x = t_cm.as_matrix().astype(np.uint8)
+            f1 = data_util.calculate_F1(x)
+            print ("F1 score is: %f" %(f1))
+            du.visualize_cm(x, "gutenberg_sentence")
+            return accu
+
+
+
+
     def train_model(self):
         # modify txt name from here
         training_history_txt_filename='results/training_history.txt'
@@ -518,4 +565,6 @@ if __name__ == "__main__":
     glove_path = "../data/glove/glove.6B.50d.txt"
     glove_vector = data_util.load_embeddings(glove_path, config.embed_size)
     model = RNNModel(config, glove_vector.astype(np.float32))
-    model.train_model()
+
+    #model.train_model()
+    model.process_model_output()

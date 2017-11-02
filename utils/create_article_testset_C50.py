@@ -10,9 +10,9 @@ import numpy as np
 import json
 from data_util import load_embeddings
 
-batch_size = 16
-max_sent_num = 30
-max_sent_length = 30
+
+max_sent_num = 3
+max_length = 70
 
 cwd = os.getcwd()
 data_path = cwd + '/../dataset/C50/C50test'
@@ -35,12 +35,11 @@ np.random.shuffle(ind)
 index = ind
 raw_data = [auth_news_num[i] for i in index ]
 
-batch_list = rmb.process_word2num_noglove(raw_data, wordToIndex, max_sent_num, max_sent_length)
+batch_list = rmb.parse_article_sentbundle(raw_data, wordToIndex, max_sent_num, max_length)
 
-batch_list_bundle = rmb.pack_batch_list(batch_list, batch_size)
 
-output = open('../../data/batch_data/C50/data_sentence_index_test.pkl', 'wb')
-pickle.dump(batch_list_bundle, output, -1)
+output = open('../../data/batch_data/C50/data_article_test.pkl', 'wb')
+pickle.dump(batch_list, output, -1)
 output.close()
 
 print "Success!"

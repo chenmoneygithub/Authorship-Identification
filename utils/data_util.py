@@ -78,18 +78,20 @@ def calculate_F1(confusion_matrix,average='macro'):
 """
 this function takes a confusion matrix and display it
 """
-def visualize_cm(cm):
+def visualize_cm(cm, name):
+    matplotlib.use('Agg')
     l=np.shape(cm)[0]
-    plt.imshow(cm, interpolation='nearest',cmap='hot')
-    plt.xticks(np.arange(0,l),range(l))
-    plt.yticks(np.arange(0,l),range(l))
+    fig=plt.figure(1)
+    plt.matshow(cm, interpolation='nearest',cmap='Reds')
+    #plt.xticks(np.arange(0,l),range(l))
+    #plt.yticks(np.arange(0,l),range(l))
     plt.colorbar()
     dirname = "./results/fig/"
     print dirname
     if not os.path.exists(dirname):
         os.makedirs(dirname)
     # plt.show()
-    plt.savefig("./results/fig/confusion_matrix.png")
+    fig.savefig("./results/fig/confusion_matrix_" + name + ".png")
 
 
 

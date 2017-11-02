@@ -153,6 +153,39 @@ def process_word2num_noglove(auth_news_list, word_dict, max_sent_num, max_sent_l
         res.append([auth_news_list[news_ind][0], sent_list, sent_mask_list])
     return res
 
+def parse_article_sentbundle(batch_list, word_dict, sentence_num = 3, max_length = 70):
+    res = [] # list of parsing article to sentence
+    pad_ind = word_dict["cqian23th7zhangrao"] # for unseen word
+    for news_ind in range(len(batch_list)):
+        bundle_sentence = []
+        bundle_mask = []
+        for start in range(0, len(batch_list[news_ind][1]), 2):
+            temp_sent = []
+            temp_mask = []
+            for i in range(min(sentence_num, len(batch_list[news_ind][1]) - start )):
+                temp_sent.extend(batch_list[news_ind][1][start + i])
+                temp_mask.extend(np.ones(len(batch_list[news_ind][1][start + i])).tolist())
+            temp_word = []
+            for i in range(len(temp_sent)):
+                if word_dict.has_key(temp_sent[i]):
+                    temp_word.append(word_dict[temp_sent[i]])
+                else:
+                    temp_word.append(pad_ind)
+
+            if len(temp_sent) > max_length:
+                temp_word = temp_word[0 : max_length]
+                temp_mask = (np.array(temp_mask)[0 : max_length] / max_length).tolist()
+            else:
+                length = len(temp_sent)
+                for j in range(len(temp_sent), max_length):
+                    temp_word.append(pad_ind)
+                    temp_mask.append(0)
+                temp_mask = (np.array(temp_mask) / length).tolist()
+
+            bundle_sentence.append( temp_word )
+            bundle_mask.append(temp_mask)
+        res.append( [batch_list[news_ind][0], bundle_sentence, bundle_mask] )
+    return res
 
 def pack_batch_list(batch_list, batch_size):
     '''
